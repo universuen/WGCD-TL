@@ -3,15 +3,19 @@ import random
 import torch
 import numpy as np
 
-from . import *
-
+from config import (
+    data,
+    dataset,
+    logger,
+    path,
+    training,
+)
 
 # training device
 device = 'auto'
 
 # random seed
 seed = 1
-
 
 if device == 'auto':
     if torch.cuda.is_available():
