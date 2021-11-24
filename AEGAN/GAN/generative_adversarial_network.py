@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 import config
 from AEGAN.GAN.models import Generator, Discriminator
 from AEGAN.logger import Logger
-from AEGAN.dataset import Dataset
+from AEGAN.dataset import MinorityDataset
 from AEGAN.utils import cal_gradient_penalty
 
 
@@ -22,14 +22,14 @@ class GenerativeAdversarialNetwork:
             in_size=z_size,
             out_size=x_size,
             hidden_sizes=[
-                32, 32, 32,
+                128, 128, 128,
             ]
         ).to(config.device)
         self.discriminator = Discriminator(
             in_size=x_size,
             out_size=1,
             hidden_sizes=[
-                32, 32, 32,
+                128, 128, 128,
             ]
         ).to(config.device)
 
@@ -45,7 +45,7 @@ class GenerativeAdversarialNetwork:
     def train(self):
         self.logger.info('started training')
         self.logger.debug(f'using device: {config.device}')
-        dataset = Dataset(
+        dataset = MinorityDataset(
             features_path=config.path.data / 'features.npy',
             labels_path=config.path.data / 'labels.npy',
         )
@@ -55,6 +55,7 @@ class GenerativeAdversarialNetwork:
             batch_size=config.training.GAN.batch_size,
             shuffle=True,
             drop_last=True,
+            num_workers=4,
         )
         g_losses = []
         d_losses = []
@@ -62,6 +63,7 @@ class GenerativeAdversarialNetwork:
         for e in range(config.training.GAN.epochs):
             print(f'\nepoch: {e + 1}')
             for idx, (x, _) in enumerate(data_loader):
+                x = x.to(config.device)
                 print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
                 loss = 0
                 for _ in range(config.training.GAN.d_n_loop):

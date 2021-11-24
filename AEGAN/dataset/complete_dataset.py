@@ -5,10 +5,8 @@ import torch
 import numpy as np
 from torch.utils.data import Dataset as Base
 
-from config import device
 
-
-class Dataset(Base):
+class CompleteDataset(Base):
     def __init__(
             self,
             features_path: Path,
@@ -18,10 +16,10 @@ class Dataset(Base):
     ):
         self.features = torch.from_numpy(
             np.load(features_path)
-        ).float().to(device)
+        ).float()
         self.labels = torch.from_numpy(
             np.load(labels_path)
-        ).float().to(device)
+        ).float()
         self.transform = transform
         self.target_transform = target_transform
 

@@ -19,7 +19,7 @@ class Decoder(nn.Module):
         for i in hidden_sizes:
             modules.extend(
                 [
-                    nn.Linear(current_dim, i),
+                    nn.Linear(current_dim, i, bias=False),
                     nn.BatchNorm1d(i),
                     nn.LeakyReLU(),
                 ]

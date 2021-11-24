@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 import config
 from AEGAN.AE.models import Encoder, Decoder
 from AEGAN.logger import Logger
-from AEGAN.dataset import Dataset
+from AEGAN.dataset import MinorityDataset
 
 
 class AutoEncoder:
@@ -21,7 +21,7 @@ class AutoEncoder:
             in_size=x_size,
             out_size=z_size,
             hidden_sizes=[
-                32, 32, 32,
+                128, 128, 128,
             ]
         ).to(config.device)
 
@@ -29,14 +29,14 @@ class AutoEncoder:
             in_size=z_size,
             out_size=x_size,
             hidden_sizes=[
-                32, 32, 32,
+                128, 128, 128,
             ]
         ).to(config.device)
 
     def train(self):
         self.logger.info('started training')
         self.logger.debug(f'using device: {config.device}')
-        dataset = Dataset(
+        dataset = MinorityDataset(
             features_path=config.path.data / 'features.npy',
             labels_path=config.path.data / 'labels.npy',
         )
@@ -46,6 +46,7 @@ class AutoEncoder:
             batch_size=config.training.AE.batch_size,
             shuffle=True,
             drop_last=True,
+            num_workers=4,
         )
         encoder_optimizer = torch.optim.Adam(
             params=self.encoder.parameters(),
@@ -59,6 +60,7 @@ class AutoEncoder:
         for e in range(config.training.AE.epochs):
             print(f'\nepoch: {e + 1}')
             for idx, (x, _) in enumerate(data_loader):
+                x = x.to(config.device)
                 print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
                 # clear gradients
                 self.encoder.zero_grad()
@@ -67,7 +69,7 @@ class AutoEncoder:
                 z = self.encoder(x)
                 x_hat = self.decoder(z)
                 # calculate gradients
-                loss = torch.norm(x - x_hat, 2) + torch.norm(z - torch.zeros(config.data.z_size).to(config.device), 2)
+                loss = torch.norm(x - x_hat, 2, dim=1).mean() + torch.norm(z.to(config.device), 2, dim=1).mean()
                 loss.backward()
                 losses.append(loss.item())
                 # optimize models
@@ -80,5 +82,5 @@ class AutoEncoder:
             plt.xlabel("Iterations")
             plt.ylabel("Loss")
             sns.lineplot(data=losses)
-            plt.savefig(config.path.plots/'AE_loss.png')
+            plt.savefig(config.path.plots / 'AE_loss.png')
             plt.clf()
