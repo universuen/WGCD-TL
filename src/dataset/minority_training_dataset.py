@@ -1,20 +1,17 @@
-from pathlib import Path
 from typing import Callable
 
 import torch
 
-from .complete_dataset import CompleteDataset
+from .complete_training_dataset import CompleteTrainingDataset
 
 
-class MinorityDataset(CompleteDataset):
+class MinorityTrainingDataset(CompleteTrainingDataset):
     def __init__(
             self,
-            features_path: Path,
-            labels_path: Path,
             transform: Callable = None,
             target_transform: Callable = None
     ):
-        super().__init__(features_path, labels_path, transform, target_transform)
+        super().__init__( transform, target_transform)
         target_item_indices = []
 
         for idx, label in enumerate(self.labels):

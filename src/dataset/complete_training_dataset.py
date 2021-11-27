@@ -1,19 +1,20 @@
-from pathlib import Path
 from typing import Callable
 
 import torch
 import numpy as np
 from torch.utils.data import Dataset as Base
 
+from config import path
 
-class CompleteDataset(Base):
+
+class CompleteTrainingDataset(Base):
     def __init__(
             self,
-            features_path: Path,
-            labels_path: Path,
             transform: Callable = None,
             target_transform: Callable = None,
     ):
+        labels_path = path.data / 'training_labels.npy'
+        features_path = path.data / 'training_features.npy'
         self.features = torch.from_numpy(
             np.load(features_path)
         ).float()

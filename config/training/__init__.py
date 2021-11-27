@@ -1,1 +1,1 @@
-from . import AE, GAN
+from . import VAE, GAN

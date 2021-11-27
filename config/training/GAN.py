@@ -1,5 +1,5 @@
-epochs: int = 30
-batch_size: int = 128
+epochs: int = 10000
+batch_size: int = 112
 
 d_n_loop: int = 5
 g_n_loop: int = 1

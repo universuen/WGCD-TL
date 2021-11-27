@@ -2,62 +2,42 @@ import torch
 import seaborn as sns
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
+from torch.nn.functional import mse_loss
 
 import config
-from AEGAN.AE.models import Encoder, Decoder
-from AEGAN.logger import Logger
-from AEGAN.dataset import MinorityDataset
+from src.VAE.models import Encoder, Decoder
+from src.logger import Logger
+from src.dataset import MinorityTrainingDataset
 
 
-class AutoEncoder:
-    def __init__(
-            self,
-            x_size: int = config.data.x_size,
-            z_size: int = config.data.z_size,
-    ):
+class VariationalAutoEncoder:
+    def __init__(self):
         self.logger = Logger(self.__class__.__name__)
-
-        self.encoder = Encoder(
-            in_size=x_size,
-            out_size=z_size,
-            hidden_sizes=[
-                128, 128, 128,
-            ]
-        ).to(config.device)
-
-        self.decoder = Decoder(
-            in_size=z_size,
-            out_size=x_size,
-            hidden_sizes=[
-                128, 128, 128,
-            ]
-        ).to(config.device)
+        self.encoder = Encoder().to(config.device)
+        self.decoder = Decoder().to(config.device)
 
     def train(self):
         self.logger.info('started training')
         self.logger.debug(f'using device: {config.device}')
-        dataset = MinorityDataset(
-            features_path=config.path.data / 'features.npy',
-            labels_path=config.path.data / 'labels.npy',
-        )
+        dataset = MinorityTrainingDataset()
         self.logger.debug(f'loaded {len(dataset)} data')
         data_loader = DataLoader(
             dataset=dataset,
-            batch_size=config.training.AE.batch_size,
+            batch_size=config.training.VAE.batch_size,
             shuffle=True,
             drop_last=True,
             num_workers=4,
         )
         encoder_optimizer = torch.optim.Adam(
             params=self.encoder.parameters(),
-            lr=config.training.AE.learning_rate,
+            lr=config.training.VAE.learning_rate,
         )
         decoder_optimizer = torch.optim.Adam(
             params=self.decoder.parameters(),
-            lr=config.training.AE.learning_rate,
+            lr=config.training.VAE.learning_rate,
         )
         losses = []
-        for e in range(config.training.AE.epochs):
+        for e in range(config.training.VAE.epochs):
             print(f'\nepoch: {e + 1}')
             for idx, (x, _) in enumerate(data_loader):
                 x = x.to(config.device)
@@ -65,11 +45,14 @@ class AutoEncoder:
                 # clear gradients
                 self.encoder.zero_grad()
                 self.decoder.zero_grad()
-                # feed data
-                z = self.encoder(x)
+                # calculate z, mu and sigma
+                z, mu, sigma = self.encoder(x)
+                # calculate x_hat
                 x_hat = self.decoder(z)
+                # calculate loss
+                divergence = - 0.5 * torch.sum(1 + torch.log(sigma ** 2) - mu ** 2 - sigma ** 2)
+                loss = divergence + mse_loss(x_hat, x)
                 # calculate gradients
-                loss = torch.norm(x - x_hat, 2, dim=1).mean() + torch.norm(z.to(config.device), 2, dim=1).mean()
                 loss.backward()
                 losses.append(loss.item())
                 # optimize models
@@ -82,5 +65,10 @@ class AutoEncoder:
             plt.xlabel("Iterations")
             plt.ylabel("Loss")
             sns.lineplot(data=losses)
-            plt.savefig(config.path.plots / 'AE_loss.png')
+            plt.savefig(config.path.plots / 'VAE_loss.png')
             plt.clf()
+
+        self.logger.debug("training finished.")
+        torch.save(self.encoder.state_dict(), config.path.data/'encoder.pt')
+        self.logger.info(f"saved encoder model at {config.path.data/'encoder.pt'}")
+
