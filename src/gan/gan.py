@@ -55,8 +55,7 @@ class GAN:
 
                 x = x.to(config.device)
                 x_1, x_2 = x.split(config.training.gan.batch_size)
-                print(
-                    f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
+                print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
                 loss = 0
 
                 for _ in range(config.training.gan.d_n_loop):
@@ -80,13 +79,12 @@ class GAN:
             plt.legend()
             plt.savefig(fname=str(config.path.plots / 'GAN_loss.jpg'))
             plt.clf()
-        
-        self.logger.info("finished training")
-        torch.save(self.generator.state_dict(), config.path.data/'generator.pt')
-        self.logger.info(f"saved generator model at {config.path.data/'generator.pt'}")
-        torch.save(self.discriminator.state_dict(), config.path.data/'discriminator.pt')
-        self.logger.info(f"saved discriminator model at {config.path.data/'discriminator.pt'}")
 
+        self.logger.info("finished training")
+        torch.save(self.generator.state_dict(), config.path.data / 'generator.pt')
+        self.logger.info(f"saved generator model at {config.path.data / 'generator.pt'}")
+        torch.save(self.discriminator.state_dict(), config.path.data / 'discriminator.pt')
+        self.logger.info(f"saved discriminator model at {config.path.data / 'discriminator.pt'}")
 
     def _train_d(self, x_1: torch.Tensor, x_2: torch.Tensor) -> float:
         self.discriminator.zero_grad()
@@ -96,11 +94,6 @@ class GAN:
         fake_x = self.generator(z).detach()
         prediction_fake = self.discriminator(fake_x)
         loss_fake = prediction_fake.mean()
-        # gradient_penalty = cal_gradient_penalty(
-        #     d_model=self.discriminator,
-        #     real_x=x_2,
-        #     fake_x=fake_x,
-        # )
         loss = loss_real + loss_fake
         loss.backward()
         self.discriminator_optimizer.step()

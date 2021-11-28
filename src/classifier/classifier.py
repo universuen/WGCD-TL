@@ -38,8 +38,7 @@ class Classifier:
         for e in range(epochs):
             print(f'\nepoch: {e + 1}')
             for idx, (x, label) in enumerate(data_loader):
-                print(
-                    f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
+                print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
                 x = x.to(config.device)
                 label = label.to(config.device)
                 self.model.zero_grad()
@@ -62,7 +61,7 @@ class Classifier:
             plt.title("Classifier Test Metrics During Training")
             plt.xlabel("Iterations")
             plt.ylabel("Percentage value")
-            plt.plot(precision_list, label='precison')
+            plt.plot(precision_list, label='precision')
             plt.plot(recall_list, label='recall')
             plt.plot(f1_list, label='f1')
             plt.legend()

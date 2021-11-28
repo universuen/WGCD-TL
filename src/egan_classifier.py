@@ -66,8 +66,7 @@ class EGANClassifier(Classifier):
         for e in range(epochs):
             print(f'\nepoch: {e + 1}')
             for idx, (x, label) in enumerate(data_loader):
-                print(
-                    f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
+                print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
                 x = x.to(config.device)
                 label = label.to(config.device)
                 self.model.zero_grad()
@@ -81,13 +80,10 @@ class EGANClassifier(Classifier):
                 z, _, _ = self.encoder(seed)
                 supplement_x = self.generator(z).detach()
                 score = self.discriminator(supplement_x).detach()
-                supplement_weight = (
-                    (score - score.min()) / (score.max() - score.min())).squeeze()
+                supplement_weight = ((score - score.min()) / (score.max() - score.min())).squeeze()
                 balanced_x = torch.cat([x, supplement_x])
-                balanced_weight = torch.cat(
-                    [torch.ones(batch_size).to(config.device), supplement_weight])
-                balanced_label = torch.cat(
-                    [label, torch.ones(fake_minority_num).to(config.device)])
+                balanced_weight = torch.cat([torch.ones(batch_size).to(config.device), supplement_weight])
+                balanced_label = torch.cat([label, torch.ones(fake_minority_num).to(config.device)])
 
                 # train
                 prediction = self.model(balanced_x).squeeze()
@@ -109,7 +105,7 @@ class EGANClassifier(Classifier):
             plt.title("EGAN-Classifier Test Metrics During Training")
             plt.xlabel("Iterations")
             plt.ylabel("Percentage value")
-            plt.plot(precision_list, label='precison')
+            plt.plot(precision_list, label='precision')
             plt.plot(recall_list, label='recall')
             plt.plot(f1_list, label='f1')
             plt.legend()

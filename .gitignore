@@ -11,3 +11,7 @@ venv/
 # others
 data/
 plots/
+VAE/
+GAN/
+VAE.py
+GAN.py
