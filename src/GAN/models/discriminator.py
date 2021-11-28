@@ -5,39 +5,43 @@ from src.utils import init_weights
 from config.data import x_size
 
 
-class Discriminator(nn.Module):
+class DiscriminatorModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.process = nn.Sequential(
             nn.utils.parametrizations.spectral_norm(
-                nn.Linear(x_size, 64),
+                nn.Linear(x_size, 256),
             ),
             nn.LeakyReLU(),
             nn.utils.parametrizations.spectral_norm(
-                nn.Linear(64, 256),
+                nn.Linear(256, 128),
             ),
             nn.LeakyReLU(),
             nn.utils.parametrizations.spectral_norm(
-                nn.Linear(256, 1024),
+                nn.Linear(128, 64),
             ),
             nn.LeakyReLU(),
             nn.utils.parametrizations.spectral_norm(
-                nn.Linear(1024, 256),
+                nn.Linear(64, 32),
             ),
             nn.LeakyReLU(),
             nn.utils.parametrizations.spectral_norm(
-                nn.Linear(256, 64),
+                nn.Linear(32, 16),
             ),
             nn.LeakyReLU(),
             nn.utils.parametrizations.spectral_norm(
-                nn.Linear(64, 16),
+                nn.Linear(16, 8),
             ),
             nn.LeakyReLU(),
             nn.utils.parametrizations.spectral_norm(
-                nn.Linear(16, 4),
+                nn.Linear(8, 4),
             ),
             nn.LeakyReLU(),
-            nn.Linear(4, 1),
+            nn.utils.parametrizations.spectral_norm(
+                nn.Linear(4, 2),
+            ),
+            nn.LeakyReLU(),
+            nn.Linear(2, 1),
         )
 
         self.apply(init_weights)

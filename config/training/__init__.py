@@ -1,1 +1,1 @@
-from . import VAE, GAN
+from . import vae, gan, classifier

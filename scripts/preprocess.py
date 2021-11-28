@@ -7,9 +7,10 @@ from sklearn.preprocessing import MinMaxScaler
 from config import path, dataset
 
 
-FILE_NAME = 'segment0.dat'
-SKIP_ROWS = 24
-
+# FILE_NAME = 'segment0.dat'
+# SKIP_ROWS = 24
+FILE_NAME = 'page-blocks0.dat'
+SKIP_ROWS = 15
 
 if __name__ == '__main__':
     # concatenate the file path
@@ -32,7 +33,6 @@ if __name__ == '__main__':
     # normalize features
     features = MinMaxScaler().fit_transform(features)
 
-    
 
     # partition training and test sets
     training_set_size = int(dataset.training_ratio * len(np_array))

@@ -1,4 +1,4 @@
-epochs: int = 10000
+epochs: int = 200
 batch_size: int = 112
 
 d_n_loop: int = 5

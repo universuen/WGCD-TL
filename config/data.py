@@ -1,2 +1,2 @@
-x_size: int = 19
+x_size: int = 10
 z_size: int = 128

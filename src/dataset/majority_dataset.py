@@ -2,20 +2,21 @@ from typing import Callable
 
 import torch
 
-from .complete_training_dataset import CompleteTrainingDataset
+from .complete_dataset import CompleteDataset
 
 
-class MinorityTrainingDataset(CompleteTrainingDataset):
+class MajorityDataset(CompleteDataset):
     def __init__(
             self,
+            training: bool = True,
             transform: Callable = None,
-            target_transform: Callable = None
+            target_transform: Callable = None,
     ):
-        super().__init__( transform, target_transform)
+        super().__init__(training, transform, target_transform)
         target_item_indices = []
 
         for idx, label in enumerate(self.labels):
-            if label == 1:
+            if label == 0:
                 target_item_indices.append(idx)
         self.features = self.features.numpy()
         self.labels = self.labels.numpy()

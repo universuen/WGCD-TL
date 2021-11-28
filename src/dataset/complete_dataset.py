@@ -7,14 +7,20 @@ from torch.utils.data import Dataset as Base
 from config import path
 
 
-class CompleteTrainingDataset(Base):
+class CompleteDataset(Base):
     def __init__(
             self,
+            training: bool = True,
             transform: Callable = None,
             target_transform: Callable = None,
     ):
-        labels_path = path.data / 'training_labels.npy'
-        features_path = path.data / 'training_features.npy'
+        if training is True:
+            labels_path = path.data / 'training_labels.npy'
+            features_path = path.data / 'training_features.npy'
+        else:
+            labels_path = path.data / 'test_labels.npy'
+            features_path = path.data / 'test_features.npy'
+
         self.features = torch.from_numpy(
             np.load(features_path)
         ).float()

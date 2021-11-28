@@ -1,2 +1,3 @@
-from .complete_training_dataset import CompleteTrainingDataset
-from .minority_training_dataset import MinorityTrainingDataset
+from .complete_dataset import CompleteDataset
+from .minority_dataset import MinorityDataset
+from .majority_dataset import MajorityDataset

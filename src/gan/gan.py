@@ -4,43 +4,44 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
 import config
-from src.VAE.models import Encoder
-from src.GAN.models import Generator, Discriminator
+from src.vae.models import EncoderModel
+from src.gan.models import GeneratorModel, DiscriminatorModel
 from src.logger import Logger
-from src.dataset import MinorityTrainingDataset
+from src.dataset import MinorityDataset
 
 
-class GenerativeAdversarialNetwork:
+class GAN:
     def __init__(self):
         self.logger = Logger(self.__class__.__name__)
 
-        self.encoder = Encoder()
+        self.encoder = EncoderModel()
         self.encoder.load_state_dict(torch.load(
             config.path.data / 'encoder.pt'))
-        self.encoder.to(config.device).eval()
+        self.encoder = self.encoder.to(config.device)
+        self.encoder.eval()
 
-        self.generator = Generator().to(config.device)
-        self.discriminator = Discriminator().to(config.device)
+        self.generator = GeneratorModel().to(config.device)
+        self.discriminator = DiscriminatorModel().to(config.device)
 
         self.generator_optimizer = torch.optim.Adam(
             params=self.generator.parameters(),
-            lr=config.training.GAN.g_learning_rate,
+            lr=config.training.gan.g_learning_rate,
             betas=(0.5, 0.9)
         )
         self.discriminator_optimizer = torch.optim.Adam(
             params=self.discriminator.parameters(),
-            lr=config.training.GAN.d_learning_rate,
+            lr=config.training.gan.d_learning_rate,
             betas=(0.5, 0.9)
         )
 
     def train(self):
         self.logger.info('started training')
         self.logger.debug(f'using device: {config.device}')
-        dataset = MinorityTrainingDataset()
+        dataset = MinorityDataset()
         self.logger.debug(f'loaded {len(dataset)} data')
         data_loader = DataLoader(
             dataset=dataset,
-            batch_size=config.training.GAN.batch_size * 2,
+            batch_size=config.training.gan.batch_size * 2,
             shuffle=True,
             drop_last=True,
             num_workers=4,
@@ -48,20 +49,20 @@ class GenerativeAdversarialNetwork:
         g_losses = []
         d_losses = []
 
-        for e in range(config.training.GAN.epochs):
+        for e in range(config.training.gan.epochs):
             print(f'\nepoch: {e + 1}')
             for idx, (x, _) in enumerate(data_loader):
 
                 x = x.to(config.device)
-                x_1, x_2 = x.split(config.training.GAN.batch_size)
+                x_1, x_2 = x.split(config.training.gan.batch_size)
                 print(
                     f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
                 loss = 0
 
-                for _ in range(config.training.GAN.d_n_loop):
+                for _ in range(config.training.gan.d_n_loop):
                     loss = self._train_d(x_1, x_2)
                 d_losses.append(loss)
-                for _ in range(config.training.GAN.g_n_loop):
+                for _ in range(config.training.gan.g_n_loop):
                     loss = self._train_g(x_1)
                 g_losses.append(loss)
 
@@ -80,7 +81,7 @@ class GenerativeAdversarialNetwork:
             plt.savefig(fname=str(config.path.plots / 'GAN_loss.jpg'))
             plt.clf()
         
-        self.logger.debug("training finished.")
+        self.logger.info("finished training")
         torch.save(self.generator.state_dict(), config.path.data/'generator.pt')
         self.logger.info(f"saved generator model at {config.path.data/'generator.pt'}")
         torch.save(self.discriminator.state_dict(), config.path.data/'discriminator.pt')

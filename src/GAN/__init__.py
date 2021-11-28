@@ -1,1 +1,1 @@
-from .generative_adversarial_network import GenerativeAdversarialNetwork
+from .gan import GAN
