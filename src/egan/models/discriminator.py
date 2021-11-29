@@ -10,11 +10,7 @@ class DiscriminatorModel(nn.Module):
         super().__init__()
         self.process = nn.Sequential(
             nn.utils.parametrizations.spectral_norm(
-                nn.Linear(x_size, 256),
-            ),
-            nn.LeakyReLU(),
-            nn.utils.parametrizations.spectral_norm(
-                nn.Linear(256, 128),
+                nn.Linear(x_size, 128),
             ),
             nn.LeakyReLU(),
             nn.utils.parametrizations.spectral_norm(

@@ -4,25 +4,17 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
 import config
-from src.vae.models import EncoderModel
-from src.gan.models import GeneratorModel, DiscriminatorModel
+from src.egan.models import GeneratorModel, DiscriminatorModel
 from src.logger import Logger
-from src.dataset import MinorityDataset
+from src.dataset import MinorityDataset, CompleteDataset
+from src import Classifier
 
 
 class GAN:
     def __init__(self):
         self.logger = Logger(self.__class__.__name__)
-
-        self.encoder = EncoderModel()
-        self.encoder.load_state_dict(torch.load(
-            config.path.data / 'encoder.pt'))
-        self.encoder = self.encoder.to(config.device)
-        self.encoder.eval()
-
         self.generator = GeneratorModel().to(config.device)
         self.discriminator = DiscriminatorModel().to(config.device)
-
         self.generator_optimizer = torch.optim.Adam(
             params=self.generator.parameters(),
             lr=config.training.gan.g_learning_rate,
@@ -44,7 +36,7 @@ class GAN:
             batch_size=config.training.gan.batch_size * 2,
             shuffle=True,
             drop_last=True,
-            num_workers=4,
+            num_workers=config.num_data_loader_workers,
         )
         g_losses = []
         d_losses = []
@@ -54,15 +46,15 @@ class GAN:
             for idx, (x, _) in enumerate(data_loader):
 
                 x = x.to(config.device)
-                x_1, x_2 = x.split(config.training.gan.batch_size)
+                x = torch.split(x, config.training.gan.batch_size)[1]
                 print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
                 loss = 0
 
                 for _ in range(config.training.gan.d_n_loop):
-                    loss = self._train_d(x_1, x_2)
+                    loss = self._train_d(x)
                 d_losses.append(loss)
                 for _ in range(config.training.gan.g_n_loop):
-                    loss = self._train_g(x_1)
+                    loss = self._train_g()
                 g_losses.append(loss)
 
             print(
@@ -77,20 +69,16 @@ class GAN:
             plt.xlabel("iterations")
             plt.ylabel("Loss")
             plt.legend()
-            plt.savefig(fname=str(config.path.plots / 'GAN_loss.jpg'))
+            plt.savefig(fname=str(config.path.plots / 'GAN_loss.png'))
             plt.clf()
 
         self.logger.info("finished training")
-        torch.save(self.generator.state_dict(), config.path.data / 'generator.pt')
-        self.logger.info(f"saved generator model at {config.path.data / 'generator.pt'}")
-        torch.save(self.discriminator.state_dict(), config.path.data / 'discriminator.pt')
-        self.logger.info(f"saved discriminator model at {config.path.data / 'discriminator.pt'}")
 
-    def _train_d(self, x_1: torch.Tensor, x_2: torch.Tensor) -> float:
+    def _train_d(self, x) -> float:
         self.discriminator.zero_grad()
-        prediction_real = self.discriminator(x_2)
+        prediction_real = self.discriminator(x)
         loss_real = - prediction_real.mean()
-        z, _, _ = self.encoder(x_1)
+        z = torch.randn(config.training.gan.batch_size, config.data.z_size).to(config.device)
         fake_x = self.generator(z).detach()
         prediction_fake = self.discriminator(fake_x)
         loss_fake = prediction_fake.mean()
@@ -99,12 +87,25 @@ class GAN:
         self.discriminator_optimizer.step()
         return loss.item()
 
-    def _train_g(self, x_1: torch.Tensor) -> float:
+    def _train_g(self) -> float:
         self.generator.zero_grad()
-        z, _, _ = self.encoder(x_1)
+        z = torch.randn(config.training.gan.batch_size, config.data.z_size).to(config.device)
         fake_x = self.generator(z)
         prediction_fake = self.discriminator(fake_x)
         loss = - prediction_fake.mean()
         loss.backward()
         self.generator_optimizer.step()
         return loss.item()
+
+
+if __name__ == '__main__':
+    gan = GAN()
+    gan.train()
+    gan.generator.eval()
+    training_dataset = CompleteDataset(training=True)
+    x_hat_num = len(training_dataset) - 2 * int(training_dataset.labels.sum().item())
+    z = torch.randn(x_hat_num, config.data.z_size).to(config.device)
+    x_hat = gan.generator(z).cpu().detach()
+    training_dataset.features = torch.cat([training_dataset.features, x_hat])
+    training_dataset.labels = torch.cat([training_dataset.labels, torch.ones(x_hat_num)])
+    Classifier('GAN_Classifier').train(training_dataset)

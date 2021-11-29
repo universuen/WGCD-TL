@@ -26,7 +26,7 @@ class VAE:
             batch_size=config.training.vae.batch_size,
             shuffle=True,
             drop_last=True,
-            num_workers=4,
+            num_workers=config.num_data_loader_workers,
         )
         encoder_optimizer = torch.optim.Adam(
             params=self.encoder.parameters(),

@@ -9,15 +9,12 @@ class EncoderModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.preprocess = nn.Sequential(
-            nn.Linear(x_size, 256, bias=False),
-            nn.BatchNorm1d(256),
+            nn.Linear(x_size, 128, bias=False),
+            nn.BatchNorm1d(128),
             nn.LeakyReLU(),
         )
 
         self.calculate_mu = nn.Sequential(
-            nn.Linear(256, 128, bias=False),
-            nn.BatchNorm1d(128),
-            nn.LeakyReLU(),
             nn.Linear(128, 64, bias=False),
             nn.BatchNorm1d(64),
             nn.LeakyReLU(),
@@ -27,9 +24,6 @@ class EncoderModel(nn.Module):
             nn.Linear(32, z_size),
         )
         self.calculate_log_variance = nn.Sequential(
-            nn.Linear(256, 128, bias=False),
-            nn.BatchNorm1d(128),
-            nn.LeakyReLU(),
             nn.Linear(128, 64, bias=False),
             nn.BatchNorm1d(64),
             nn.LeakyReLU(),

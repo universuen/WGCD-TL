@@ -14,6 +14,9 @@ from config import (
 # training device
 device = 'auto'
 
+# multi-processing
+num_data_loader_workers = 0
+
 # random seed
 seed = 1
 

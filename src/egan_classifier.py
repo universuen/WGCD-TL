@@ -11,12 +11,12 @@ from config.training.classifier import epochs, batch_size, learning_rate
 from src.dataset import MinorityDataset, CompleteDataset
 from src.classifier import Classifier
 from src.vae.models import EncoderModel
-from src.gan.models import GeneratorModel, DiscriminatorModel
+from src.egan.models import GeneratorModel, DiscriminatorModel
 
 
 class EGANClassifier(Classifier):
     def __init__(self):
-        super().__init__()
+        super().__init__('EGAN_Classifier')
         self.encoder = EncoderModel()
         self.encoder.load_state_dict(
             torch.load(
@@ -29,7 +29,7 @@ class EGANClassifier(Classifier):
         self.generator = GeneratorModel()
         self.generator.load_state_dict(
             torch.load(
-                config.path.data / 'generator.pt'
+                config.path.data / 'EGAN_generator.pt'
             )
         )
         self.generator.to(config.device)
@@ -38,16 +38,16 @@ class EGANClassifier(Classifier):
         self.discriminator = DiscriminatorModel()
         self.discriminator.load_state_dict(
             torch.load(
-                config.path.data / 'discriminator.pt'
+                config.path.data / 'EGAN_discriminator.pt'
             )
         )
         self.discriminator.to(config.device)
         self.discriminator.eval()
 
-    def train(self):
+    def train(self, training_dataset = CompleteDataset(training=True)):
         self.logger.info('started training')
         self.logger.debug(f'using device: {config.device}')
-        training_dataset = CompleteDataset(training=True)
+        self.logger.debug(f'loaded {len(training_dataset)} samples from training dataset')
         minority_training_dataset = MinorityDataset(training=True)
 
         data_loader = DataLoader(
@@ -121,3 +121,6 @@ class EGANClassifier(Classifier):
             plt.clf()
 
         self.logger.debug('finished training')
+        torch.save(self.model.state_dict(), config.path.data / f'{self.name}_model.pt')
+        self.logger.info(f"saved encoder model at {config.path.data / f'{self.name}_model.pt'}")
+        return precision_list, recall_list, f1_list

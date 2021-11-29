@@ -2,10 +2,9 @@ import context
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 
 from config import path, dataset
-
 
 # FILE_NAME = 'segment0.dat'
 # SKIP_ROWS = 24
@@ -15,12 +14,12 @@ SKIP_ROWS = 15
 if __name__ == '__main__':
     # concatenate the file path
     file_path = path.data / FILE_NAME
-    
+
     # read raw data
     df = pd.read_csv(file_path, sep=', ', engine='python', skiprows=SKIP_ROWS, header=None)
     np_array = df.to_numpy()
     np.random.shuffle(np_array)
-    
+
     # partition labels and features
     labels = np_array[:, -1].copy()
     features = np_array[:, :-1].copy()
@@ -31,8 +30,7 @@ if __name__ == '__main__':
     labels = labels.astype('int')
 
     # normalize features
-    features = MinMaxScaler().fit_transform(features)
-
+    features = StandardScaler().fit_transform(features)
 
     # partition training and test sets
     training_set_size = int(dataset.training_ratio * len(np_array))
@@ -44,4 +42,3 @@ if __name__ == '__main__':
     np.save(path.data / 'training_features.npy', training_features)
     np.save(path.data / 'test_labels.npy', test_labels)
     np.save(path.data / 'test_features.npy', test_features)
-

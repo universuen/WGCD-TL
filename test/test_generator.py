@@ -1,10 +1,10 @@
 import context
 
 import torch
-from torch.nn.functional import kl_div, softmax, log_softmax
+from torch.nn.functional import softmax, log_softmax
 
 from src.vae.models import EncoderModel
-from src.gan.models import GeneratorModel
+from src.egan.models import GeneratorModel
 from src.dataset import MinorityDataset
 from config import path
 
@@ -20,10 +20,10 @@ if __name__ == '__main__':
     e.eval()
 
     g = GeneratorModel()
-    g.load_state_dict(torch.load(path.data / 'generator.pt'))
+    g.load_state_dict(torch.load(path.data / 'EGAN_generator.pt'))
     g.eval()
 
-    x = MinorityDataset()[:10][0]
+    x = MinorityDataset()[:100][0]
     z, _, _ = e(x)
     x_hat = g(z)
     print(x.mean().mean().item())

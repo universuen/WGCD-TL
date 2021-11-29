@@ -13,21 +13,22 @@ from src.logger import Logger
 
 
 class Classifier:
-    def __init__(self):
+    def __init__(self, name='Classifier'):
         self.logger = Logger(self.__class__.__name__)
         self.model = ClassifierModel().to(config.device)
+        self.name = name
 
-    def train(self):
+    def train(self, training_dataset = CompleteDataset(training=True)):
         self.logger.info('started training')
         self.logger.debug(f'using device: {config.device}')
-        training_dataset = CompleteDataset(training=True)
+        self.logger.debug(f'loaded {len(training_dataset)} samples from training dataset')
 
         data_loader = DataLoader(
             dataset=training_dataset,
             batch_size=batch_size,
             shuffle=True,
             drop_last=True,
-            num_workers=4,
+            num_workers=config.num_data_loader_workers,
         )
         optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
         losses = []
@@ -58,30 +59,33 @@ class Classifier:
             recall_list.append(recall * 100)
             f1_list.append(f1 * 100)
             sns.set()
-            plt.title("Classifier Test Metrics During Training")
+            plt.title(f"{self.name} Test Metrics During Training")
             plt.xlabel("Iterations")
             plt.ylabel("Percentage value")
             plt.plot(precision_list, label='precision')
             plt.plot(recall_list, label='recall')
             plt.plot(f1_list, label='f1')
             plt.legend()
-            plt.savefig(config.path.plots / 'Classifier_test_metrics.png')
+            plt.savefig(config.path.plots / f'{self.name}_test_metrics.png')
             plt.clf()
 
             print(f'current loss: {losses[-1]}')
-            plt.title("Classifier Loss During Training")
+            plt.title(f"{self.name} Loss During Training")
             plt.xlabel("Iterations")
             plt.ylabel("Loss")
             sns.lineplot(data=losses)
-            plt.savefig(config.path.plots / 'Classifier_loss.png')
+            plt.savefig(config.path.plots / f'{self.name}_loss.png')
             plt.clf()
         self.logger.debug('finished training')
+        torch.save(self.model.state_dict(), config.path.data / f'{self.name}_model.pt')
+        self.logger.info(f"saved encoder model at {config.path.data / f'{self.name}_model.pt'}")
+        return precision_list, recall_list, f1_list
 
     def test(self, in_training: bool = False):
         if not in_training:
             self.model.load_state_dict(
                 torch.load(
-                    config.path.data / 'classifier.pt'
+                    config.path.data / f'{self.name}_model.pt'
                 )
             )
         self.model.eval()
