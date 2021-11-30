@@ -109,14 +109,14 @@ def validate(filename: str, skip_rows: int):
 if __name__ == '__main__':
     result = dict()
     filename_and_skip_rows = {
-        # 'page-blocks0.dat': 15,
-        # 'segment0.dat': 24,
-        # 'yeast4.dat': 13,
-        # 'yeast5.dat': 13,
-        # 'yeast6.dat': 13,
-        # 'ecoli3.dat': 12,
-        # 'ecoli4.dat': 12,
-        # 'glass0.dat': 14,
+        'page-blocks0.dat': 15,
+        'segment0.dat': 24,
+        'yeast4.dat': 13,
+        'yeast5.dat': 13,
+        'yeast6.dat': 13,
+        'ecoli3.dat': 12,
+        'ecoli4.dat': 12,
+        'glass0.dat': 14,
         'glass2.dat': 14,
         'glass4.dat': 14,
         'vowel0.dat': 18,
