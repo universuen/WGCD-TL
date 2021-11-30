@@ -13,7 +13,11 @@ if __name__ == '__main__':
     e.eval()
 
     x = torch.Tensor(
-        np.array([np.load(path.data / 'test_features.npy')[0]])
+        np.array([np.load(path.data / 'test_features.npy')[0], np.load(path.data / 'test_features.npy')[0], np.load(path.data / 'test_features.npy')[0]])
     )
-    _, mu, sigma = e(x)
-    print(mu.mean().item(), sigma.mean().item())
+    z = e(x)[0]
+    print(z.shape)
+    print(z[0].sum(), z[1].sum(), z[2].sum())
+
+    # _, mu, sigma = e(x)
+    # print(mu.mean().item(), sigma.mean().item())

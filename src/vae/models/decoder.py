@@ -1,15 +1,15 @@
 import torch
 from torch import nn
 
+import config
 from src.utils import init_weights
-from config.data import x_size, z_size
 
 
 class DecoderModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.process = nn.Sequential(
-            nn.Linear(z_size, 128, bias=False),
+            nn.Linear(config.data.z_size, 128, bias=False),
             nn.BatchNorm1d(128),
             nn.LeakyReLU(),
             nn.Linear(128, 64, bias=False),
@@ -18,7 +18,7 @@ class DecoderModel(nn.Module):
             nn.Linear(64, 32, bias=False),
             nn.BatchNorm1d(32),
             nn.LeakyReLU(),
-            nn.Linear(32, x_size),
+            nn.Linear(32, config.data.x_size),
         )
 
         self.apply(init_weights)

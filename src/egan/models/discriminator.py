@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 
+import config
 from src.utils import init_weights
-from config.data import x_size
 
 
 class DiscriminatorModel(nn.Module):
@@ -10,7 +10,7 @@ class DiscriminatorModel(nn.Module):
         super().__init__()
         self.process = nn.Sequential(
             nn.utils.parametrizations.spectral_norm(
-                nn.Linear(x_size, 128),
+                nn.Linear(config.data.x_size, 128),
             ),
             nn.LeakyReLU(),
             nn.utils.parametrizations.spectral_norm(

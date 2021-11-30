@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from torch.nn.functional import mse_loss
+from tqdm import tqdm
 
 import config
 from src.vae.models import EncoderModel, DecoderModel
@@ -37,11 +38,10 @@ class VAE:
             lr=config.training.vae.learning_rate,
         )
         losses = []
-        for e in range(config.training.vae.epochs):
-            print(f'\nepoch: {e + 1}')
+        for e in tqdm(range(config.training.vae.epochs)):
+            # print(f'\nepoch: {e + 1}')
             for idx, (x, _) in enumerate(data_loader):
-                print(
-                    f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
+                # print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
                 # clear gradients
                 x = x.to(config.device)
                 self.encoder.zero_grad()
@@ -52,7 +52,7 @@ class VAE:
                 x_hat = self.decoder(z)
                 # calculate loss
                 divergence = - 0.5 * \
-                    torch.sum(1 + torch.log(sigma ** 2) - mu ** 2 - sigma ** 2)
+                             torch.sum(1 + torch.log(sigma ** 2) - mu ** 2 - sigma ** 2)
                 loss = divergence + mse_loss(x_hat, x)
                 # calculate gradients
                 loss.backward()
@@ -60,7 +60,7 @@ class VAE:
                 # optimize models
                 encoder_optimizer.step()
                 decoder_optimizer.step()
-            print(f'\ncurrent loss: {losses[-1]}')
+            # print(f'\ncurrent loss: {losses[-1]}')
 
             sns.set()
             plt.title("AutoEncoder Loss During Training")
@@ -71,5 +71,5 @@ class VAE:
             plt.clf()
 
         self.logger.info("finished training")
-        torch.save(self.encoder.state_dict(), config.path.data/'encoder.pt')
-        self.logger.info(f"saved encoder model at {config.path.data/'encoder.pt'}")
+        torch.save(self.encoder.state_dict(), config.path.data / 'encoder.pt')
+        self.logger.info(f"saved encoder model at {config.path.data / 'encoder.pt'}")
