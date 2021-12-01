@@ -1,7 +1,6 @@
-epochs: int = 1000
-batch_size: int = -1
+epochs: int = 500
 
-d_n_loop: int = 5
+d_n_loop: int = 3
 g_n_loop: int = 1
 
 d_learning_rate: float = 2e-4

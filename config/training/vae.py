@@ -1,3 +1,2 @@
-epochs: int = 300
-batch_size: int = 390
-learning_rate: float = 5e-3
+epochs: int = 500
+learning_rate: float = 1e-3

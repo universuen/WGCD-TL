@@ -32,46 +32,29 @@ class SNGAN:
         self.logger.debug(f'using device: {config.device}')
         dataset = MinorityDataset()
         self.logger.debug(f'loaded {len(dataset)} data')
-        data_loader = DataLoader(
-            dataset=dataset,
-            batch_size=config.training.gan.batch_size * 2,
-            shuffle=True,
-            drop_last=True,
-            num_workers=config.num_data_loader_workers,
-        )
         g_losses = []
         d_losses = []
 
         for e in tqdm(range(config.training.gan.epochs)):
-            # print(f'\nepoch: {e + 1}')
-            for idx, (x, _) in enumerate(data_loader):
+            x = dataset[:][0].to(config.device)
+            x = torch.split(x, len(x) // 2)[0]
+            loss = 0
+            for _ in range(config.training.gan.d_n_loop):
+                loss = self._train_d(x)
+            d_losses.append(loss)
+            for _ in range(config.training.gan.g_n_loop):
+                loss = self._train_g(len(x))
+            g_losses.append(loss)
 
-                x = x.to(config.device)
-                x = torch.split(x, config.training.gan.batch_size)[1]
-                # print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
-                loss = 0
-
-                for _ in range(config.training.gan.d_n_loop):
-                    loss = self._train_d(x)
-                d_losses.append(loss)
-                for _ in range(config.training.gan.g_n_loop):
-                    loss = self._train_g()
-                g_losses.append(loss)
-
-            # print(
-            #     f"\n"
-            #     f"Discriminator loss: {d_losses[-1]}\n"
-            #     f"Generator loss: {g_losses[-1]}\n"
-            # )
-            sns.set()
-            plt.title("Generator and Discriminator Loss During Training")
-            plt.plot(g_losses, label="generator")
-            plt.plot(d_losses, label="discriminator")
-            plt.xlabel("iterations")
-            plt.ylabel("Loss")
-            plt.legend()
-            plt.savefig(fname=str(config.path.plots / 'SNGAN_loss.png'))
-            plt.clf()
+        sns.set()
+        plt.title("Generator and Discriminator Loss During Training")
+        plt.plot(g_losses, label="generator")
+        plt.plot(d_losses, label="discriminator")
+        plt.xlabel("iterations")
+        plt.ylabel("Loss")
+        plt.legend()
+        plt.savefig(fname=str(config.path.plots / 'SNGAN_loss.png'))
+        plt.clf()
 
         self.logger.info("finished training")
 
@@ -79,7 +62,7 @@ class SNGAN:
         self.discriminator.zero_grad()
         prediction_real = self.discriminator(x)
         loss_real = - prediction_real.mean()
-        z = torch.randn(config.training.gan.batch_size, config.data.z_size).to(config.device)
+        z = torch.randn(len(x), config.data.z_size).to(config.device)
         fake_x = self.generator(z).detach()
         prediction_fake = self.discriminator(fake_x)
         loss_fake = prediction_fake.mean()
@@ -88,9 +71,9 @@ class SNGAN:
         self.discriminator_optimizer.step()
         return loss.item()
 
-    def _train_g(self) -> float:
+    def _train_g(self, x_len) -> float:
         self.generator.zero_grad()
-        z = torch.randn(config.training.gan.batch_size, config.data.z_size).to(config.device)
+        z = torch.randn(x_len, config.data.z_size).to(config.device)
         fake_x = self.generator(z)
         prediction_fake = self.discriminator(fake_x)
         loss = - prediction_fake.mean()

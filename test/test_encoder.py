@@ -14,14 +14,12 @@ if __name__ == '__main__':
     x = torch.Tensor(
         np.array([
             np.load(path.data / 'test_features.npy')[0],
-            np.load(path.data / 'test_features.npy')[0],
-            np.load(path.data / 'test_features.npy')[0]
         ]
         )
     )
     z = e(x)[0]
-    print(z.shape)
-    print(z[0].sum(), z[1].sum(), z[2].sum())
+    z_ = torch.randn_like(z)
+    print(torch.norm(z - z_, dim=1))
 
-    # _, mu, sigma = e(x)
-    # print(mu.mean().item(), sigma.mean().item())
+    _, mu, sigma = e(x)
+    print(mu.mean().item(), sigma.mean().item())

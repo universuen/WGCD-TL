@@ -103,7 +103,7 @@ def validate(filename: str, skip_rows: int):
         for metric_name, vv in v.items():
             v[metric_name] = sum(vv) / len(vv)
 
-    return result
+    return pd.DataFrame(result)
 
 
 if __name__ == '__main__':
@@ -130,11 +130,15 @@ if __name__ == '__main__':
         'shuttle-c0-vs-c4.dat': 14,
         'winequality-white-3-9_vs_5.dat': 16,
     }
+    with open(path.data / 'tested_datasets.txt', 'w') as f:
+        f.write('')
     for filename, skip_rows in filename_and_skip_rows.items():
-        print(filename)
         result[filename] = validate(filename, skip_rows)
+        with open(path.data / 'tested_datasets.txt', 'a') as f:
+            f.write(f'{filename}\n')
+            f.write(f'{result[filename]}\n\n')
 
     with pd.ExcelWriter(config.path.data / 'validation.xlsx') as writer:
-        for filename, data in result.items():
-            pd.DataFrame(data).to_excel(writer, filename.split('.')[0])
+        for filename, df in result.items():
+            df.to_excel(writer, filename.split('.')[0])
     print('done!')

@@ -44,7 +44,6 @@ class EGANClassifier(Classifier):
         minority_training_dataset = MinorityDataset(training=True)
         single_loss_list = []
         for idx, (x, label) in enumerate(data_loader):
-            # print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
             x = x.to(config.device)
             label = label.to(config.device)
             self.model.zero_grad()

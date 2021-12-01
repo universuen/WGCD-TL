@@ -40,46 +40,28 @@ class EGAN:
         self.logger.debug(f'using device: {config.device}')
         dataset = MinorityDataset()
         self.logger.debug(f'loaded {len(dataset)} data')
-        data_loader = DataLoader(
-            dataset=dataset,
-            batch_size=config.training.gan.batch_size * 2,
-            shuffle=True,
-            drop_last=True,
-            num_workers=config.num_data_loader_workers,
-        )
         g_losses = []
         d_losses = []
 
         for e in tqdm(range(config.training.gan.epochs)):
-            # print(f'\nepoch: {e + 1}')
-            for idx, (x, _) in enumerate(data_loader):
-
-                x = x.to(config.device)
-                x_1, x_2 = x.split(config.training.gan.batch_size)
-                # print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
-                loss = 0
-
-                for _ in range(config.training.gan.d_n_loop):
-                    loss = self._train_d(x_1, x_2)
-                d_losses.append(loss)
-                for _ in range(config.training.gan.g_n_loop):
-                    loss = self._train_g(x_1)
-                g_losses.append(loss)
-
-            # print(
-            #     f"\n"
-            #     f"Discriminator loss: {d_losses[-1]}\n"
-            #     f"Generator loss: {g_losses[-1]}\n"
-            # )
-            sns.set()
-            plt.title("Generator and Discriminator Loss During Training")
-            plt.plot(g_losses, label="generator")
-            plt.plot(d_losses, label="discriminator")
-            plt.xlabel("iterations")
-            plt.ylabel("Loss")
-            plt.legend()
-            plt.savefig(fname=str(config.path.plots / 'EGAN_loss.png'))
-            plt.clf()
+            x = dataset[:][0].to(config.device)
+            x_1, x_2 = x.split(len(x) // 2)[:2]
+            loss = 0
+            for _ in range(config.training.gan.d_n_loop):
+                loss = self._train_d(x_1, x_2)
+            d_losses.append(loss)
+            for _ in range(config.training.gan.g_n_loop):
+                loss = self._train_g(x_1)
+            g_losses.append(loss)
+        sns.set()
+        plt.title("Generator and Discriminator Loss During Training")
+        plt.plot(g_losses, label="generator")
+        plt.plot(d_losses, label="discriminator")
+        plt.xlabel("iterations")
+        plt.ylabel("Loss")
+        plt.legend()
+        plt.savefig(fname=str(config.path.plots / 'EGAN_loss.png'))
+        plt.clf()
 
         self.logger.info("finished training")
         torch.save(self.generator.state_dict(), config.path.data / 'EGAN_generator.pt')

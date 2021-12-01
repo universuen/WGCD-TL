@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torch.nn.utils.parametrizations import spectral_norm
 
 import config
 from src.utils import init_weights
@@ -9,34 +10,20 @@ class DiscriminatorModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.process = nn.Sequential(
-            nn.utils.parametrizations.spectral_norm(
-                nn.Linear(config.data.x_size, 128),
-            ),
-            nn.LeakyReLU(),
-            nn.utils.parametrizations.spectral_norm(
-                nn.Linear(128, 64),
-            ),
-            nn.LeakyReLU(),
-            nn.utils.parametrizations.spectral_norm(
-                nn.Linear(64, 32),
-            ),
-            nn.LeakyReLU(),
-            nn.utils.parametrizations.spectral_norm(
-                nn.Linear(32, 16),
-            ),
-            nn.LeakyReLU(),
-            nn.utils.parametrizations.spectral_norm(
-                nn.Linear(16, 8),
-            ),
-            nn.LeakyReLU(),
-            nn.utils.parametrizations.spectral_norm(
-                nn.Linear(8, 4),
-            ),
-            nn.LeakyReLU(),
-            nn.utils.parametrizations.spectral_norm(
-                nn.Linear(4, 2),
-            ),
-            nn.LeakyReLU(),
+            spectral_norm(nn.Linear(config.data.x_size, 32)),
+            nn.LeakyReLU(0.2),
+            spectral_norm(nn.Linear(32, 64)),
+            nn.LeakyReLU(0.2),
+            spectral_norm(nn.Linear(64, 32)),
+            nn.LeakyReLU(0.2),
+            spectral_norm(nn.Linear(32, 16)),
+            nn.LeakyReLU(0.2),
+            spectral_norm(nn.Linear(16, 8)),
+            nn.LeakyReLU(0.2),
+            spectral_norm(nn.Linear(8, 4)),
+            nn.LeakyReLU(0.2),
+            spectral_norm(nn.Linear(4, 2)),
+            nn.LeakyReLU(0.2),
             nn.Linear(2, 1),
         )
 

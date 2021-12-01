@@ -1,3 +1,3 @@
 epochs = 100
 batch_size = 128
-learning_rate = 5e-3
+learning_rate = 2e-3

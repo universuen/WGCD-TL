@@ -57,28 +57,28 @@ class Classifier:
             accuracy_list.append(accuracy)
             auc_list.append(auc)
 
-            # visualize metrics
-            sns.set()
-            plt.title(f"{self.name} Test Metrics During Training")
-            plt.xlabel("Iterations")
-            plt.ylabel("Value")
-            plt.plot(precision_list, label='Precision')
-            plt.plot(recall_list, label='Recall')
-            plt.plot(f1_list, label='F1')
-            plt.plot(accuracy_list, label='Accuracy')
-            plt.plot(auc_list, label='AUC')
-            plt.legend()
-            plt.savefig(config.path.plots / f'{self.name}_test_metrics.png')
-            plt.clf()
+        # visualize metrics
+        sns.set()
+        plt.title(f"{self.name} Test Metrics During Training")
+        plt.xlabel("Iterations")
+        plt.ylabel("Value")
+        plt.plot(precision_list, label='Precision')
+        plt.plot(recall_list, label='Recall')
+        plt.plot(f1_list, label='F1')
+        plt.plot(accuracy_list, label='Accuracy')
+        plt.plot(auc_list, label='AUC')
+        plt.legend()
+        plt.savefig(config.path.plots / f'{self.name}_test_metrics.png')
+        plt.clf()
 
-            # visualize training loss
-            # print(f'current loss: {loss_list[-1]: .3f}')
-            plt.title(f"{self.name} Loss During Training")
-            plt.xlabel("Iterations")
-            plt.ylabel("Loss")
-            sns.lineplot(data=loss_list)
-            plt.savefig(config.path.plots / f'{self.name}_Loss.png')
-            plt.clf()
+        # visualize training loss
+        # print(f'current loss: {loss_list[-1]: .3f}')
+        plt.title(f"{self.name} Loss During Training")
+        plt.xlabel("Iterations")
+        plt.ylabel("Loss")
+        sns.lineplot(data=loss_list)
+        plt.savefig(config.path.plots / f'{self.name}_Loss.png')
+        plt.clf()
 
         # visualize roc curve
         roc_curve_ = self._cal_roc_curve()
@@ -105,7 +105,6 @@ class Classifier:
     def _single_epoch_train(self, data_loader, optimizer):
         single_loss_list = []
         for idx, (x, label) in enumerate(data_loader):
-            # print(f'\rprocess: {100 * (idx + 1) / len(data_loader): .2f}%', end='')
             x = x.to(config.device)
             label = label.to(config.device)
             self.model.zero_grad()
