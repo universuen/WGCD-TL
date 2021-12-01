@@ -59,9 +59,9 @@ class EGANClassifier(Classifier):
             supplement_weight = ((score - score.min()) / (score.max() - score.min())).squeeze()
             balanced_x = torch.cat([x, supplement_x])
             balanced_weight = torch.cat(
-                [torch.ones(config.training.classifier.batch_size).to(config.device), supplement_weight]
+                [torch.ones(config.training.classifier.batch_size, device=config.device), supplement_weight]
             )
-            balanced_label = torch.cat([label, torch.ones(fake_minority_num).to(config.device)])
+            balanced_label = torch.cat([label, torch.ones(fake_minority_num, device=config.device)])
 
             # train
             prediction = self.model(balanced_x).squeeze()
