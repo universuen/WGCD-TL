@@ -1,7 +1,6 @@
 import torch
 import seaborn as sns
 import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 import config

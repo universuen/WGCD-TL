@@ -61,6 +61,7 @@ class EGANClassifier(Classifier):
             balanced_weight = torch.cat(
                 [torch.ones(config.training.classifier.batch_size, device=config.device), supplement_weight]
             )
+            balanced_weight = balanced_weight + (1 - balanced_weight.mean())
             balanced_label = torch.cat([label, torch.ones(fake_minority_num, device=config.device)])
 
             # train

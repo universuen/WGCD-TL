@@ -1,4 +1,4 @@
-epochs: int = 500
+epochs: int = 1000
 
 d_n_loop: int = 3
 g_n_loop: int = 1
