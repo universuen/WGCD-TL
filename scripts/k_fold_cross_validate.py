@@ -1,5 +1,5 @@
 import context
-from time import sleep
+import random
 
 import torch
 import numpy as np
@@ -23,40 +23,47 @@ def train_models():
     # collect EGAN Classifier metrics
     VAE().train()
     EGAN().train()
-    metrics['EGAN'] = EGANClassifier().train()
-    # collect WGAN-GP Classifier metrics
-    wgan = WGAN()
-    wgan.train()
-    wgan.generator.eval()
-    training_dataset = CompleteDataset(training=True)
-    x_hat_num = len(training_dataset) - 2 * int(training_dataset.labels.sum().item())
-    z = torch.randn(x_hat_num, config.data.z_size).to(config.device)
-    x_hat = wgan.generator(z).cpu().detach()
-    training_dataset.features = torch.cat([training_dataset.features, x_hat])
-    training_dataset.labels = torch.cat([training_dataset.labels, torch.ones(x_hat_num)])
-    metrics['WGAN-GP'] = Classifier('WGAN_GP_Classifier').train(training_dataset)
-    # collect SNGAN Classifier metrics
-    sngan = SNGAN()
-    sngan.train()
-    sngan.generator.eval()
-    training_dataset = CompleteDataset(training=True)
-    x_hat_num = len(training_dataset) - 2 * int(training_dataset.labels.sum().item())
-    z = torch.randn(x_hat_num, config.data.z_size).to(config.device)
-    x_hat = sngan.generator(z).cpu().detach()
-    training_dataset.features = torch.cat([training_dataset.features, x_hat])
-    training_dataset.labels = torch.cat([training_dataset.labels, torch.ones(x_hat_num)])
-    metrics['SNGAN'] = Classifier('SNGAN_Classifier').train(training_dataset)
-    # collect Simple Classifier metrics
-    metrics['Simple'] = Classifier().train()
-    # collect SMOTE Classifier metrics
-    x, y = CompleteDataset(training=True)[:]
-    x = x.numpy()
-    y = y.numpy()
-    x, y = SMOTE().fit_resample(x, y)
-    smote_dataset = CompleteDataset()
-    smote_dataset.features = torch.from_numpy(x)
-    smote_dataset.labels = torch.from_numpy(y)
-    metrics['SMOTE'] = Classifier('SMOTE_Classifier').train(smote_dataset)
+    config.set_random_state()
+    metrics['EGAN_Classifier'] = EGANClassifier(weight_optimization=False, name='EGAN_Classifier').train()
+    config.set_random_state()
+    metrics['EGAN_W_Classifier'] = EGANClassifier(weight_optimization=True, name='EGAN_W_Classifier').train()
+    # # collect WGAN-GP Classifier metrics
+    # config.set_random_state()
+    # wgan = WGAN()
+    # wgan.train()
+    # wgan.generator.eval()
+    # training_dataset = CompleteDataset(training=True)
+    # x_hat_num = len(training_dataset) - 2 * int(training_dataset.labels.sum().item())
+    # z = torch.randn(x_hat_num, config.data.z_size).to(config.device)
+    # x_hat = wgan.generator(z).cpu().detach()
+    # training_dataset.features = torch.cat([training_dataset.features, x_hat])
+    # training_dataset.labels = torch.cat([training_dataset.labels, torch.ones(x_hat_num)])
+    # metrics['WGAN-GP'] = Classifier('WGAN_GP_Classifier').train(training_dataset)
+    # # collect SNGAN Classifier metrics
+    # config.set_random_state()
+    # sngan = SNGAN()
+    # sngan.train()
+    # sngan.generator.eval()
+    # training_dataset = CompleteDataset(training=True)
+    # x_hat_num = len(training_dataset) - 2 * int(training_dataset.labels.sum().item())
+    # z = torch.randn(x_hat_num, config.data.z_size).to(config.device)
+    # x_hat = sngan.generator(z).cpu().detach()
+    # training_dataset.features = torch.cat([training_dataset.features, x_hat])
+    # training_dataset.labels = torch.cat([training_dataset.labels, torch.ones(x_hat_num)])
+    # metrics['SNGAN'] = Classifier('SNGAN_Classifier').train(training_dataset)
+    # # collect Simple Classifier metrics
+    # config.set_random_state()
+    # metrics['Simple'] = Classifier().train()
+    # # collect SMOTE Classifier metrics
+    # config.set_random_state()
+    # x, y = CompleteDataset(training=True)[:]
+    # x = x.numpy()
+    # y = y.numpy()
+    # x, y = SMOTE().fit_resample(x, y)
+    # smote_dataset = CompleteDataset()
+    # smote_dataset.features = torch.from_numpy(x)
+    # smote_dataset.labels = torch.from_numpy(y)
+    # metrics['SMOTE'] = Classifier('SMOTE_Classifier').train(smote_dataset)
     return metrics
 
 
@@ -77,7 +84,7 @@ def validate(filename: str, skip_rows: int):
 
     skf = StratifiedKFold(n_splits=K, shuffle=True, random_state=config.seed)
 
-    model_names = ['EGAN', 'SNGAN', 'WGAN-GP', 'SMOTE', 'Simple']
+    model_names = ['EGAN_Classifier', 'EGAN_W_Classifier']
     metric_names = ['Precision', 'Recall', 'F1', 'Accuracy', 'AUC']
     result = {
         k: {

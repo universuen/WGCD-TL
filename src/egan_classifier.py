@@ -11,16 +11,9 @@ from src.egan.models import GeneratorModel, DiscriminatorModel
 
 
 class EGANClassifier(Classifier):
-    def __init__(self):
-        super().__init__('EGAN_Classifier')
-        self.encoder = EncoderModel()
-        self.encoder.load_state_dict(
-            torch.load(
-                config.path.data / 'encoder.pt'
-            )
-        )
-        self.encoder.to(config.device)
-        self.encoder.eval()
+    def __init__(self, weight_optimization: bool, name: str):
+        super().__init__(name)
+        self.weight_optimization = weight_optimization
 
         self.generator = GeneratorModel()
         self.generator.load_state_dict(
@@ -41,35 +34,30 @@ class EGANClassifier(Classifier):
         self.discriminator.eval()
 
     def _single_epoch_train(self, data_loader, optimizer):
-        minority_training_dataset = MinorityDataset(training=True)
         single_loss_list = []
-        for idx, (x, label) in enumerate(data_loader):
+        for idx, (x, labels) in enumerate(data_loader):
             x = x.to(config.device)
-            label = label.to(config.device)
-            self.model.zero_grad()
-
-            # balance samples
-            real_minority_num = int(label.sum().item())
+            labels = labels.to(config.device)
+            real_minority_num = int(labels.sum().item())
             fake_minority_num = config.training.classifier.batch_size - real_minority_num
-            seed = choice(list(minority_training_dataset))[0]
-            seed = torch.stack([seed for _ in range(fake_minority_num)]).to(config.device)
-            z, _, _ = self.encoder(seed)
+            z = torch.randn(fake_minority_num, config.data.z_size, device=config.device)
             supplement_x = self.generator(z).detach()
-            score = self.discriminator(supplement_x).detach()
-            supplement_weight = ((score - score.min()) / (score.max() - score.min())).squeeze()
             balanced_x = torch.cat([x, supplement_x])
-            balanced_weight = torch.cat(
-                [torch.ones(config.training.classifier.batch_size, device=config.device), supplement_weight]
-            )
-            balanced_weight = balanced_weight + (1 - balanced_weight.mean())
-            balanced_label = torch.cat([label, torch.ones(fake_minority_num, device=config.device)])
-
-            # train
-            prediction = self.model(balanced_x).squeeze()
+            if self.weight_optimization:
+                scores = self.discriminator(supplement_x).detach()
+                supplement_weight = ((scores - scores.min()) / (scores.max() - scores.min())).squeeze()
+                weights = torch.cat(
+                    [torch.ones(config.training.classifier.batch_size, device=config.device), supplement_weight]
+                )
+                weights = weights + (1 - weights.mean())
+            else:
+                weights = torch.ones(len(balanced_x), device=config.device)
+            balanced_labels = torch.cat([labels, torch.ones(fake_minority_num, device=config.device)])
+            predictions = self.model(balanced_x).squeeze()
             loss = binary_cross_entropy(
-                input=prediction,
-                target=balanced_label,
-                weight=balanced_weight,
+                input=predictions,
+                target=balanced_labels,
+                weight=weights,
             )
             loss.backward()
             optimizer.step()
