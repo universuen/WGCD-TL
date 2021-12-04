@@ -9,5 +9,5 @@ __pycache__/
 venv/
 
 # others
-data/
-plots/
+# data/
+# plots/
