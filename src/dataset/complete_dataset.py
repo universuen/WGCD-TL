@@ -4,7 +4,7 @@ import torch
 import numpy as np
 from torch.utils.data import Dataset as Base
 
-import config
+from src import config
 
 
 class CompleteDataset(Base):
@@ -15,17 +15,17 @@ class CompleteDataset(Base):
             target_transform: Callable = None,
     ):
         if training is True:
-            labels_path = config.path.data / 'training_labels.npy'
-            features_path = config.path.data / 'training_features.npy'
+            labels_path = config.path.data / 'training_label.npy'
+            features_path = config.path.data / 'training_feature.npy'
         else:
-            labels_path = config.path.data / 'test_labels.npy'
-            features_path = config.path.data / 'test_features.npy'
+            labels_path = config.path.data / 'test_label.npy'
+            features_path = config.path.data / 'test_feature.npy'
 
         self.features = torch.from_numpy(
-            np.load(features_path)
+            np.load(str(features_path))
         ).float()
         self.labels = torch.from_numpy(
-            np.load(labels_path)
+            np.load(str(labels_path))
         ).float()
         self.transform = transform
         self.target_transform = target_transform
