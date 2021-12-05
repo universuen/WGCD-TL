@@ -1,10 +1,8 @@
 import context
 
-import torch
-
 from src import utils, config
 from src.dataset import MinorityDataset
-from src import SNGAN
+from src import VAE
 
 
 FILE_NAME = 'page-blocks0.dat'
@@ -18,9 +16,11 @@ if __name__ == '__main__':
     # train
     dataset = MinorityDataset(training=True)
     utils.set_random_state()
-    sn_gan = SNGAN()
-    sn_gan.train(dataset=dataset)
+    vae = VAE()
+    vae.train(dataset=dataset)
     # test
-    sn_gan.load_model()
-    z = torch.randn(1, config.data.z_size, device=config.device)
-    print(sn_gan.generator(z))
+    vae.load_model()
+    x = dataset[:3][0].to(config.device)
+    z, mu, sigma = vae.encoder(x)
+    print(mu.mean().mean())
+    print(sigma.mean().mean())

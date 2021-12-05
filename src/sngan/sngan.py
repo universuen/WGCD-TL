@@ -1,6 +1,4 @@
 import torch
-from torch.utils.data import Dataset
-from tqdm import tqdm
 
 from src import config
 from src._gan_base import GANBase
@@ -10,19 +8,19 @@ from .model import DiscriminatorModel, GeneratorModel
 class SNGAN(GANBase):
 
     def __init__(self):
-        g = GeneratorModel().to(config.device)
-        d = DiscriminatorModel().to(config.device)
+        generator = GeneratorModel().to(config.device)
+        discriminator = DiscriminatorModel().to(config.device)
         super(SNGAN, self).__init__(
-            g=g,
-            d=d,
-            g_optimizer=torch.optim.Adam(
-                params=g.parameters(),
-                lr=config.training.sngan.g_lr,
+            generator=generator,
+            discriminator=discriminator,
+            generator_optimizer=torch.optim.Adam(
+                params=generator.parameters(),
+                lr=config.training.sngan.generator_lr,
                 betas=(0.5, 0.9),
             ),
-            d_optimizer=torch.optim.Adam(
-                params=d.parameters(),
-                lr=config.training.sngan.d_lr,
+            discriminator_optimizer=torch.optim.Adam(
+                params=discriminator.parameters(),
+                lr=config.training.sngan.discriminator_lr,
                 betas=(0.5, 0.9),
             ),
             training_config=config.training.sngan,
@@ -32,25 +30,25 @@ class SNGAN(GANBase):
             'g_loss': [],
         }
 
-    def _train_d(self, x: torch.Tensor) -> float:
-        self.d.zero_grad()
-        prediction_real = self.d(x)
+    def _train_discriminator(self, x: torch.Tensor) -> float:
+        self.discriminator.zero_grad()
+        prediction_real = self.discriminator(x)
         loss_real = - prediction_real.mean()
         z = torch.randn(len(x), config.data.z_size, device=config.device)
-        fake_x = self.g(z).detach()
-        prediction_fake = self.d(fake_x)
+        fake_x = self.generator(z).detach()
+        prediction_fake = self.discriminator(fake_x)
         loss_fake = prediction_fake.mean()
         loss = loss_real + loss_fake
         loss.backward()
-        self.d_optimizer.step()
+        self.discriminator_optimizer.step()
         return loss.item()
 
-    def _train_g(self, x_len: int) -> float:
-        self.g.zero_grad()
+    def _train_generator(self, x_len: int) -> float:
+        self.generator.zero_grad()
         z = torch.randn(x_len, config.data.z_size, device=config.device)
-        fake_x = self.g(z)
-        prediction_fake = self.d(fake_x)
+        fake_x = self.generator(z)
+        prediction_fake = self.discriminator(fake_x)
         loss = - prediction_fake.mean()
         loss.backward()
-        self.g_optimizer.step()
+        self.generator_optimizer.step()
         return loss.item()
