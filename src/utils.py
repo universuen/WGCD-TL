@@ -34,9 +34,12 @@ def init_weights(layer: nn.Module):
 
 
 def prepare_dataset(file_name: str):
+
     set_random_state()
+
     # concatenate the file path
     file_path = config.path.data / file_name
+
     # calculate skip rows
     skip_rows = 0
     with open(file_path, 'r') as f:
@@ -46,6 +49,7 @@ def prepare_dataset(file_name: str):
                 break
             else:
                 skip_rows += 1
+
     # read raw data
     df = pd.read_csv(file_path, sep=',', skiprows=skip_rows, header=None)
     np_array = df.to_numpy()
@@ -79,3 +83,13 @@ def prepare_dataset(file_name: str):
 
 def set_x_size():
     config.data.x_size = len(CompleteDataset()[0][0])
+
+
+def get_final_test_metrics(statistics: dict):
+    metrics = dict()
+    for name, values in statistics.items():
+        if name == 'Loss':
+            continue
+        else:
+            metrics[name] = values[-1]
+    return metrics

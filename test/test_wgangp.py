@@ -4,7 +4,7 @@ import torch
 
 from src import utils, config
 from src.dataset import MinorityDataset
-from src import SNGAN
+from src import WGANGP
 
 
 FILE_NAME = 'page-blocks0.dat'
@@ -15,10 +15,11 @@ if __name__ == '__main__':
     # set config
     utils.set_x_size()
     # train
+    dataset = MinorityDataset(training=True)
     utils.set_random_state()
-    sngan = SNGAN()
-    sngan.train(MinorityDataset(training=True))
+    wgangp = WGANGP()
+    wgangp.train(dataset=dataset)
     # test
-    sngan.load_model()
+    wgangp.load_model()
     z = torch.randn(1, config.data.z_size, device=config.device)
-    print(sngan.generator(z))
+    print(wgangp.generator(z))

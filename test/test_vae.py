@@ -9,7 +9,6 @@ FILE_NAME = 'page-blocks0.dat'
 
 if __name__ == '__main__':
     # prepare dataset
-    utils.set_random_state()
     utils.prepare_dataset(FILE_NAME)
     # set config
     utils.set_x_size()
@@ -22,5 +21,5 @@ if __name__ == '__main__':
     vae.load_model()
     x = dataset[:3][0].to(config.device)
     z, mu, sigma = vae.encoder(x)
-    print(mu.mean().mean())
-    print(sigma.mean().mean())
+    print(mu.mean().mean().item())
+    print(sigma.mean().mean().item())

@@ -6,7 +6,7 @@ from torch.nn.functional import binary_cross_entropy
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import numpy as np
-from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score, roc_auc_score
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -116,7 +116,7 @@ class Classifier:
         self._plot()
         self.logger.info('Finished training')
 
-    def egw_train(
+    def egd_train(
             self,
             encoder: nn.Module,
             generator: nn.Module,
@@ -126,7 +126,7 @@ class Classifier:
             seed_dataset: Dataset,
     ) -> None:
 
-        self.logger.info('Started training with encoder, generator and weighted loss')
+        self.logger.info('Started training with encoder, generator and discriminator')
         self.logger.debug(f'Using device: {config.device}')
 
         dl = DataLoader(
@@ -146,19 +146,27 @@ class Classifier:
                 x = x.to(config.device)
                 label = label.to(config.device)
                 real_minority_num = int(label.sum().item())
-                fake_minority_num = config.training.classifier.batch_size - real_minority_num
-                seed = random.choice(seed_dataset[:][0]).to(config.device)
-
-                z = encoder(seed).detach()
-                supplement_x = generator(z).detach()
-
-                score = discriminator(x).detach()
-                weight = ((score - score.min()) / (score.max() - score.min())).squeeze(dim=1)
-                weight = torch.cat([torch.ones(real_minority_num, device=config.device), weight])
-                weight = (fake_minority_num / weight.sum()) * weight
-
-                balanced_x = torch.cat([x, supplement_x])
-                balanced_label = torch.cat([label, torch.ones(fake_minority_num, device=config.device)])
+                fake_minority_num = len(x) - 2 * real_minority_num
+                majority_num = real_minority_num + fake_minority_num
+                if fake_minority_num > 0:
+                    seed = random.choice(seed_dataset[:][0]).to(config.device)
+                    seed = torch.stack([seed for _ in range(fake_minority_num)]).to(config.device)
+                    z, _, _ = encoder(seed)
+                    supplement_x = generator(z).detach()
+                    score = discriminator(supplement_x).detach()
+                    if len(score) > 1:
+                        weight = ((score - score.min()) / (score.max() - score.min())).squeeze(dim=1)
+                    else:
+                        weight = torch.sigmoid(score).squeeze(dim=1)
+                    weight = torch.cat([torch.ones(real_minority_num, device=config.device), weight])
+                    weight = majority_num / weight.sum() * weight
+                    weight = torch.cat([torch.ones(majority_num, device=config.device), weight])
+                    balanced_x = torch.cat([x, supplement_x])
+                    balanced_label = torch.cat([label, torch.ones(fake_minority_num, device=config.device)])
+                else:
+                    balanced_x = x
+                    balanced_label = label
+                    weight = torch.ones(len(x), device=config.device)
                 prediction = self.model(balanced_x).squeeze()
                 loss = binary_cross_entropy(
                     input=prediction,
@@ -187,9 +195,20 @@ class Classifier:
                 average='binary',
                 zero_division=0,
             )
+            accuracy = accuracy_score(
+                y_true=label,
+                y_pred=predicted_label,
+                normalize=True,
+            )
+            auc = roc_auc_score(
+                y_true=label,
+                y_score=predicted_label,
+            )
             self.statistics['Precision'].append(precision)
             self.statistics['Recall'].append(recall)
             self.statistics['F1'].append(f1)
+            self.statistics['Accuracy'].append(accuracy)
+            self.statistics['AUC'].append(auc)
             self.model.train()
 
     @staticmethod
