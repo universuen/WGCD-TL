@@ -1,5 +1,8 @@
 import context
 
+import glob
+from os.path import basename
+
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -183,35 +186,19 @@ def validate(file_name_: str) -> pd.DataFrame:
     return pd.DataFrame(result_)
 
 
+def get_all_datasets() -> list[str]:
+    return [basename(p) for p in glob.glob(str(config.path.data / '*.dat'))]
+
+
 if __name__ == '__main__':
-    all_datasets = (
-        'page-blocks0.dat',
-        'segment0.dat',
-        'yeast4.dat',
-        'yeast5.dat',
-        'yeast6.dat',
-        'ecoli3.dat',
-        'ecoli4.dat',
-        'glass0.dat',
-        'glass2.dat',
-        'glass4.dat',
-        'vowel0.dat',
-        'haberman.dat',
-        'iris0.dat',
-        'vehicle0.dat',
-        'vehicle1.dat',
-        'vehicle2.dat',
-        'wisconsin.dat',
-        'poker-8_vs_6.dat',
-        'shuttle-c0-vs-c4.dat',
-        'winequality-white-3-9_vs_5.dat',
-    )
+    all_datasets = get_all_datasets()
 
     with open(config.path.data / 'tested_datasets.txt', 'w') as f:
         f.write('')
 
     result = dict()
     for file_name in all_datasets:
+        print(f'{file_name:*^50}')
         result[file_name] = validate(file_name)
         with open(config.path.data / 'tested_datasets.txt', 'a') as f:
             f.write(f'{file_name}\n')
