@@ -154,7 +154,7 @@ class Classifier:
                     z, _, _ = encoder(seed)
                     supplement_x = generator(z).detach()
                     score = discriminator(supplement_x).detach()
-                    if len(score) > 1:
+                    if score.max() - score.min() > 0:
                         weight = ((score - score.min()) / (score.max() - score.min())).squeeze(dim=1)
                     else:
                         weight = torch.sigmoid(score).squeeze(dim=1)

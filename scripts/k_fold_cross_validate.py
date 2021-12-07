@@ -12,6 +12,8 @@ from src import config
 
 K = 10
 MODELS = (
+    'GAN_G',
+    'GAN_EGD',
     'SNGAN_G',
     'SNGAN_EGD',
     'WGANGP_G',
@@ -26,6 +28,21 @@ METRICS = (
 )
 
 
+def highlight_higher_cell(s: pd.Series) -> list[str]:
+    result_ = []
+    for i_1, i_2 in zip(s[0::2], s[1::2]):
+        if i_1 > i_2:
+            result_.append('background-color: yellow')
+            result_.append('')
+        elif i_1 < i_2:
+            result_.append('')
+            result_.append('background-color: yellow')
+        else:
+            result_.append('')
+            result_.append('')
+    return result_
+
+
 def train_all() -> dict:
     metric_ = dict()
     utils.set_x_size()
@@ -35,6 +52,33 @@ def train_all() -> dict:
     vae = VAE()
     vae.train(MinorityDataset(training=True))
     vae.load_model()
+
+    # GAN_G
+    utils.set_random_state()
+    gan = src.GAN()
+    gan.train(MinorityDataset(training=True))
+    gan.load_model()
+    utils.set_random_state()
+    classifier = Classifier('GAN_G')
+    classifier.g_train(
+        generator=gan.generator,
+        training_dataset=CompleteDataset(training=True),
+        test_dateset=CompleteDataset(training=False),
+    )
+    metric_['GAN_G'] = utils.get_final_test_metrics(classifier.statistics)
+
+    # GAN_EGD
+    utils.set_random_state()
+    classifier = Classifier('GAN_EGD')
+    classifier.egd_train(
+        encoder=vae.encoder,
+        generator=gan.generator,
+        discriminator=gan.discriminator,
+        training_dataset=CompleteDataset(training=True),
+        test_dateset=CompleteDataset(training=False),
+        seed_dataset=MinorityDataset(training=True),
+    )
+    metric_['GAN_EGD'] = utils.get_final_test_metrics(classifier.statistics)
 
     # SNGAN_G
     utils.set_random_state()
@@ -176,4 +220,9 @@ if __name__ == '__main__':
     with pd.ExcelWriter(config.path.data / 'validation.xlsx') as writer:
         for filename, df in result.items():
             df.to_excel(writer, filename.split('.')[0])
+            for column in df:
+                column_width = 20
+                col_idx = df.columns.get_loc(column) + 1
+                writer.sheets[filename.split('.')[0]].set_column(col_idx, col_idx, column_width)
+            df.style.apply(highlight_higher_cell, axis=1).to_excel(writer, filename.split('.')[0])
     print('done!')

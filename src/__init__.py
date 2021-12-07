@@ -9,6 +9,7 @@ from . import (
     utils,
 )
 from .classifier import Classifier
+from .gan import GAN
 from .vae import VAE
 from .sngan import SNGAN
 from .wgangp import WGANGP

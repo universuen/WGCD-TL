@@ -25,10 +25,6 @@ class WGANGP(GANBase):
             ),
             training_config=config.training.wgangp,
         )
-        self.metrics = {
-            'd_loss': [],
-            'g_loss': [],
-        }
 
     def _train_discriminator(self, x: torch.Tensor) -> float:
         self.discriminator.zero_grad()
@@ -48,8 +44,8 @@ class WGANGP(GANBase):
         self.generator.zero_grad()
         z = torch.randn(x_len, config.data.z_size, device=config.device)
         fake_x = self.generator(z)
-        prediction_fake = self.discriminator(fake_x)
-        loss = - prediction_fake.mean()
+        prediction = self.discriminator(fake_x)
+        loss = - prediction.mean()
         loss.backward()
         self.generator_optimizer.step()
         return loss.item()
