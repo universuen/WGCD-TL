@@ -85,6 +85,7 @@ class Classifier:
             dataset=training_dataset,
             batch_size=config.training.classifier.batch_size,
             shuffle=True,
+            drop_last=True,
         )
         optimizer = torch.optim.Adam(
             params=self.model.parameters(),
@@ -133,6 +134,7 @@ class Classifier:
             dataset=training_dataset,
             batch_size=config.training.classifier.batch_size,
             shuffle=True,
+            drop_last=True,
         )
         optimizer = torch.optim.Adam(
             params=self.model.parameters(),

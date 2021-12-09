@@ -4,7 +4,7 @@ import torch
 from torch import nn
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 from src import config
 from src.dataset import CompleteDataset
@@ -67,7 +67,7 @@ def prepare_dataset(file_name: str):
     label = label.astype('int')
 
     # normalize feature
-    feature = StandardScaler().fit_transform(feature)
+    feature = MinMaxScaler().fit_transform(feature)
 
     # partition training and test sets
     training_set_size = int(config.dataset.training_ratio * len(np_array))

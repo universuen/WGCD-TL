@@ -5,7 +5,7 @@ from os.path import basename
 
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import StratifiedKFold
 
 import src
@@ -165,7 +165,7 @@ def validate(file_name_: str) -> pd.DataFrame:
     label[label[:] == 'positive'] = 1
     label[label[:] == 'negative'] = 0
     label = label.astype('int')
-    feature = StandardScaler().fit_transform(feature)
+    feature = MinMaxScaler().fit_transform(feature)
 
     # partition data and train all models
     skf = StratifiedKFold(n_splits=K, shuffle=True, random_state=config.seed)
