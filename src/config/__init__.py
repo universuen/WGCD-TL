@@ -11,7 +11,7 @@ from . import (
 seed: int = 0
 
 # pytorch device
-device = 'auto'
+device = 'cpu'
 
 if device == 'auto':
     if torch.cuda.is_available():
