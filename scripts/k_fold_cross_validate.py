@@ -1,12 +1,16 @@
 import context
 
 import glob
+import math
 from os.path import basename
 
+import torch
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import StratifiedKFold
+from imblearn.over_sampling import SMOTE, ADASYN
+from imblearn.combine import SMOTEENN
 
 import src
 from src import utils, Classifier, VAE
@@ -15,6 +19,10 @@ from src import config
 
 K = 10
 MODELS = (
+    'Original',
+    'SMOTE',
+    'ADASYN',
+    'SMOTE_ENN',
     'GAN_G',
     'GAN_EGD',
     'SNGAN_G',
@@ -49,6 +57,66 @@ def highlight_higher_cell(s: pd.Series) -> list[str]:
 def train_all() -> dict:
     metric_ = dict()
     utils.set_x_size()
+
+    # original classifier
+    utils.set_random_state()
+    classifier = Classifier('Original')
+    classifier.train(
+        training_dataset=CompleteDataset(training=True),
+        test_dateset=CompleteDataset(training=False),
+    )
+    metric_['Original'] = utils.get_final_test_metrics(classifier.statistics)
+
+    # SMOTE
+    x, y = CompleteDataset(training=True)[:]
+    x = x.numpy()
+    y = y.numpy()
+    x, y = SMOTE(random_state=config.seed).fit_resample(x, y)
+    smote_dataset = CompleteDataset()
+    smote_dataset.features = torch.from_numpy(x)
+    smote_dataset.labels = torch.from_numpy(y)
+    utils.set_random_state()
+    classifier = Classifier('SMOTE')
+    classifier.train(
+        training_dataset=smote_dataset,
+        test_dateset=CompleteDataset(training=False),
+    )
+    metric_['SMOTE'] = utils.get_final_test_metrics(classifier.statistics)
+
+    # ADASYN
+    try:
+        x, y = CompleteDataset(training=True)[:]
+        x = x.numpy()
+        y = y.numpy()
+        x, y = ADASYN(random_state=config.seed).fit_resample(x, y)
+        adasyn_dataset = CompleteDataset()
+        adasyn_dataset.features = torch.from_numpy(x)
+        adasyn_dataset.labels = torch.from_numpy(y)
+        utils.set_random_state()
+        classifier = Classifier('ADASYN')
+        classifier.train(
+            training_dataset=adasyn_dataset,
+            test_dateset=CompleteDataset(training=False),
+        )
+        metric_['ADASYN'] = utils.get_final_test_metrics(classifier.statistics)
+    except RuntimeError:
+        metric_['ADASYN'] = {k: math.nan for k in METRICS}
+
+    # SMOTE_ENN
+    x, y = CompleteDataset(training=True)[:]
+    x = x.numpy()
+    y = y.numpy()
+    x, y = SMOTEENN(random_state=config.seed).fit_resample(x, y)
+    smote_enn_dataset = CompleteDataset()
+    smote_enn_dataset.features = torch.from_numpy(x)
+    smote_enn_dataset.labels = torch.from_numpy(y)
+    utils.set_random_state()
+    classifier = Classifier('SMOTE_ENN')
+    classifier.train(
+        training_dataset=smote_enn_dataset,
+        test_dateset=CompleteDataset(training=False),
+    )
+    metric_['SMOTE_ENN'] = utils.get_final_test_metrics(classifier.statistics)
 
     # prepare encoder
     utils.set_random_state()
@@ -208,8 +276,8 @@ if __name__ == '__main__':
         for filename, df in result.items():
             df.to_excel(writer, filename.split('.')[0])
             for column in df:
-                column_width = 20
+                column_width = 15
                 col_idx = df.columns.get_loc(column) + 1
                 writer.sheets[filename.split('.')[0]].set_column(col_idx, col_idx, column_width)
-            df.style.apply(highlight_higher_cell, axis=1).to_excel(writer, filename.split('.')[0])
+            df.style.highlight_max(axis=1).to_excel(writer, filename.split('.')[0])
     print('done!')

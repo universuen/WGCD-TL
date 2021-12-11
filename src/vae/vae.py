@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 from torch.nn.functional import mse_loss
 from tqdm import tqdm
 
-from src import config
+from src import config, Logger
 from src.vae.model import EncoderModel, DecoderModel
-from src.logger import Logger
 
 
 class VAE:

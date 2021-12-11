@@ -8,8 +8,7 @@ from tqdm import tqdm
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from src.logger import Logger
-from src import config
+from src import config, Logger
 
 
 class GANBase:
@@ -34,7 +33,6 @@ class GANBase:
         }
 
     def train(self, dataset: Dataset):
-
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
 
@@ -54,16 +52,13 @@ class GANBase:
 
     @abstractmethod
     def _train_discriminator(self, x: torch.Tensor) -> float:
-
         pass
 
     @abstractmethod
     def _train_generator(self, x_len: int) -> float:
-
         pass
 
     def _save_model(self):
-
         generator_path = config.path.data / f'{self.__class__.__name__}_generator.pt'
         torch.save(self.generator.state_dict(), generator_path)
         self.logger.debug(f'Saved generator model at {generator_path}')
@@ -73,7 +68,6 @@ class GANBase:
         self.logger.debug(f'Saved discriminator model at {discriminator_path}')
 
     def _plot(self):
-
         sns.set()
         plt.title(f"{self.__class__.__name__} Generator and Discriminator Loss During Training")
         plt.plot(self.statistics['generator_loss'], label="Generator")
@@ -87,7 +81,6 @@ class GANBase:
         self.logger.debug(f'Saved plot at {plot_path}')
 
     def load_model(self):
-
         generator_path = config.path.data / f'{self.__class__.__name__}_generator.pt'
         self.generator.load_state_dict(
             torch.load(generator_path)

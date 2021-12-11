@@ -34,7 +34,6 @@ def init_weights(layer: nn.Module):
 
 
 def prepare_dataset(file_name: str):
-
     set_random_state()
 
     # concatenate the file path

@@ -10,9 +10,8 @@ from sklearn.metrics import precision_recall_fscore_support, accuracy_score, roc
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from .classifier_model import ClassifierModel
-from src.logger import Logger
-from src import config
+from src import config, Logger
+from src.classifier.classifier_model import ClassifierModel
 
 
 class Classifier:
@@ -46,6 +45,7 @@ class Classifier:
             dataset=training_dataset,
             batch_size=config.training.classifier.batch_size,
             shuffle=True,
+            drop_last=True,
         )
         optimizer = torch.optim.Adam(
             params=self.model.parameters(),
