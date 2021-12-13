@@ -1,3 +1,3 @@
-epochs: int = 100
-lr: float = 1e-3
+epochs: int = 500
+lr: float = 3e-3
 batch_size: int = 128

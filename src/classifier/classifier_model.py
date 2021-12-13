@@ -13,7 +13,7 @@ class ClassifierModel(nn.Module):
             nn.Linear(data.x_size, 64, bias=False),
             nn.BatchNorm1d(64),
             nn.LeakyReLU(),
-            nn.Linear(64, 32),
+            nn.Linear(64, 32, bias=False),
             nn.BatchNorm1d(32),
             nn.LeakyReLU(),
             nn.Linear(32, 16, bias=False),

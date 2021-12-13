@@ -40,7 +40,7 @@ class GAN(GANBase):
         label_fake = torch.zeros(len(x), device=config.device)
         loss_fake = self.criterion(prediction_fake, label_fake)
 
-        loss = loss_real + loss_fake
+        loss = (loss_real + loss_fake) / 2
         loss.backward()
         self.discriminator_optimizer.step()
 

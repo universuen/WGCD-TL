@@ -1,8 +1,6 @@
 import context
 
-import glob
 import math
-from os.path import basename
 
 import torch
 import pandas as pd
@@ -17,7 +15,7 @@ from src import utils, Classifier, VAE
 from src.dataset import CompleteDataset, MinorityDataset
 from src import config
 
-K = 10
+K = 5
 MODELS = (
     'Original',
     'SMOTE',
@@ -68,20 +66,23 @@ def train_all() -> dict:
     metric_['Original'] = utils.get_final_test_metrics(classifier.statistics)
 
     # SMOTE
-    x, y = CompleteDataset(training=True)[:]
-    x = x.numpy()
-    y = y.numpy()
-    x, y = SMOTE(random_state=config.seed).fit_resample(x, y)
-    smote_dataset = CompleteDataset()
-    smote_dataset.features = torch.from_numpy(x)
-    smote_dataset.labels = torch.from_numpy(y)
-    utils.set_random_state()
-    classifier = Classifier('SMOTE')
-    classifier.train(
-        training_dataset=smote_dataset,
-        test_dateset=CompleteDataset(training=False),
-    )
-    metric_['SMOTE'] = utils.get_final_test_metrics(classifier.statistics)
+    try:
+        x, y = CompleteDataset(training=True)[:]
+        x = x.numpy()
+        y = y.numpy()
+        x, y = SMOTE(random_state=config.seed).fit_resample(x, y)
+        smote_dataset = CompleteDataset()
+        smote_dataset.features = torch.from_numpy(x)
+        smote_dataset.labels = torch.from_numpy(y)
+        utils.set_random_state()
+        classifier = Classifier('SMOTE')
+        classifier.train(
+            training_dataset=smote_dataset,
+            test_dateset=CompleteDataset(training=False),
+        )
+        metric_['SMOTE'] = utils.get_final_test_metrics(classifier.statistics)
+    except ValueError:
+        metric_['SMOTE'] = {k: math.nan for k in METRICS}
 
     # ADASYN
     try:
@@ -99,24 +100,27 @@ def train_all() -> dict:
             test_dateset=CompleteDataset(training=False),
         )
         metric_['ADASYN'] = utils.get_final_test_metrics(classifier.statistics)
-    except RuntimeError:
+    except (RuntimeError, ValueError):
         metric_['ADASYN'] = {k: math.nan for k in METRICS}
 
     # SMOTE_ENN
-    x, y = CompleteDataset(training=True)[:]
-    x = x.numpy()
-    y = y.numpy()
-    x, y = SMOTEENN(random_state=config.seed).fit_resample(x, y)
-    smote_enn_dataset = CompleteDataset()
-    smote_enn_dataset.features = torch.from_numpy(x)
-    smote_enn_dataset.labels = torch.from_numpy(y)
-    utils.set_random_state()
-    classifier = Classifier('SMOTE_ENN')
-    classifier.train(
-        training_dataset=smote_enn_dataset,
-        test_dateset=CompleteDataset(training=False),
-    )
-    metric_['SMOTE_ENN'] = utils.get_final_test_metrics(classifier.statistics)
+    try:
+        x, y = CompleteDataset(training=True)[:]
+        x = x.numpy()
+        y = y.numpy()
+        x, y = SMOTEENN(random_state=config.seed).fit_resample(x, y)
+        smote_enn_dataset = CompleteDataset()
+        smote_enn_dataset.features = torch.from_numpy(x)
+        smote_enn_dataset.labels = torch.from_numpy(y)
+        utils.set_random_state()
+        classifier = Classifier('SMOTE_ENN')
+        classifier.train(
+            training_dataset=smote_enn_dataset,
+            test_dateset=CompleteDataset(training=False),
+        )
+        metric_['SMOTE_ENN'] = utils.get_final_test_metrics(classifier.statistics)
+    except ValueError:
+        metric_['SMOTE_ENN'] = {k: math.nan for k in METRICS}
 
     # prepare encoder
     utils.set_random_state()
@@ -254,12 +258,10 @@ def validate(file_name_: str) -> pd.DataFrame:
     return pd.DataFrame(result_)
 
 
-def get_all_datasets() -> list[str]:
-    return [basename(p) for p in glob.glob(str(config.path.data / '*.dat'))]
-
-
 if __name__ == '__main__':
-    all_datasets = get_all_datasets()
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    all_datasets = src.utils.get_all_datasets()
 
     with open(config.path.data / 'tested_datasets.txt', 'w') as f:
         f.write('')

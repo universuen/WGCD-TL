@@ -5,7 +5,7 @@ from src.dataset import MinorityDataset
 from src import VAE
 
 
-FILE_NAME = 'page-blocks0.dat'
+FILE_NAME = 'segment0.dat'
 
 if __name__ == '__main__':
     # prepare dataset

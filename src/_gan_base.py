@@ -32,12 +32,12 @@ class GANBase:
             'generator_loss': [],
         }
 
-    def train(self, dataset: Dataset):
+    def train(self, dataset: Dataset, plot: bool = False):
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
 
+        x = dataset[:][0].to(config.device)
         for _ in tqdm(range(self.training_config.epochs)):
-            x = dataset[:][0].to(config.device)
             loss = 0
             for _ in range(self.training_config.discriminator_loop_num):
                 loss = self._train_discriminator(x)
@@ -45,9 +45,11 @@ class GANBase:
             for _ in range(self.training_config.generator_loop_num):
                 loss = self._train_generator(len(x))
             self.statistics['generator_loss'].append(loss)
-
+        self.generator.eval()
+        self.discriminator.eval()
         self._save_model()
-        self._plot()
+        if plot:
+            self._plot()
         self.logger.info(f'Finished training')
 
     @abstractmethod

@@ -10,19 +10,15 @@ class DiscriminatorModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.process = nn.Sequential(
-            spectral_norm(nn.Linear(config.data.x_size, 64)),
+            spectral_norm(nn.Linear(config.data.x_size, 512)),
             nn.LeakyReLU(0.2),
-            spectral_norm(nn.Linear(64, 32)),
+            spectral_norm(nn.Linear(512, 128)),
             nn.LeakyReLU(0.2),
-            spectral_norm(nn.Linear(32, 16)),
+            spectral_norm(nn.Linear(128, 32)),
             nn.LeakyReLU(0.2),
-            spectral_norm(nn.Linear(16, 8)),
+            spectral_norm(nn.Linear(32, 8)),
             nn.LeakyReLU(0.2),
-            spectral_norm(nn.Linear(8, 4)),
-            nn.LeakyReLU(0.2),
-            spectral_norm(nn.Linear(4, 2)),
-            nn.LeakyReLU(0.2),
-            nn.Linear(2, 1),
+            spectral_norm(nn.Linear(8, 1)),
         )
 
         self.apply(init_weights)

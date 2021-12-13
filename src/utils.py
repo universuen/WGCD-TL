@@ -1,4 +1,6 @@
 import random
+import glob
+from os.path import basename
 
 import torch
 from torch import nn
@@ -79,6 +81,8 @@ def prepare_dataset(file_name: str):
     np.save(str(config.path.data / 'test_label.npy'), test_label)
     np.save(str(config.path.data / 'test_feature.npy'), test_feature)
 
+    set_x_size()
+
 
 def set_x_size():
     config.data.x_size = len(CompleteDataset()[0][0])
@@ -92,3 +96,7 @@ def get_final_test_metrics(statistics: dict):
         else:
             metrics[name] = values[-1]
     return metrics
+
+
+def get_all_datasets() -> list[str]:
+    return [basename(p) for p in glob.glob(str(config.path.data / '*.dat'))]

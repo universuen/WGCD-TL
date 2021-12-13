@@ -146,29 +146,36 @@ class Classifier:
             for x, label in dl:
                 self.model.zero_grad()
                 x = x.to(config.device)
+
                 label = label.to(config.device)
                 real_minority_num = int(label.sum().item())
                 fake_minority_num = len(x) - 2 * real_minority_num
                 majority_num = real_minority_num + fake_minority_num
+
                 if fake_minority_num > 0:
+
                     seed = random.choice(seed_dataset[:][0]).to(config.device)
                     seed = torch.stack([seed for _ in range(fake_minority_num)]).to(config.device)
                     z, _, _ = encoder(seed)
                     supplement_x = generator(z).detach()
                     score = discriminator(supplement_x).detach()
+
                     if score.max() - score.min() > 0:
                         weight = ((score - score.min()) / (score.max() - score.min())).squeeze(dim=1)
                     else:
                         weight = torch.sigmoid(score).squeeze(dim=1)
+
                     weight = torch.cat([torch.ones(real_minority_num, device=config.device), weight])
                     weight = majority_num / weight.sum() * weight
                     weight = torch.cat([torch.ones(majority_num, device=config.device), weight])
+
                     balanced_x = torch.cat([x, supplement_x])
                     balanced_label = torch.cat([label, torch.ones(fake_minority_num, device=config.device)])
                 else:
                     balanced_x = x
                     balanced_label = label
                     weight = torch.ones(len(x), device=config.device)
+
                 prediction = self.model(balanced_x).squeeze()
                 loss = binary_cross_entropy(
                     input=prediction,
