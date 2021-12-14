@@ -10,7 +10,7 @@ from sklearn.manifold import TSNE
 
 import src
 
-TARGET_GAN = src.GAN
+TARGET_GAN = src.WGAN
 
 if __name__ == '__main__':
     result = dict()
@@ -26,8 +26,7 @@ if __name__ == '__main__':
 
         src.utils.set_random_state()
         gan = TARGET_GAN()
-        gan.train(dataset=src.dataset.MinorityDataset(training=True))
-        gan.load_model()
+        gan.train(dataset=src.dataset.MinorityDataset(training=True), plot=True)
         z = torch.randn([len(raw_y) - int(2 * sum(raw_y)), src.config.data.z_size], device=src.config.device)
         x = np.concatenate(
             [raw_x, gan.generator(z).detach().cpu().numpy()],
@@ -63,14 +62,14 @@ if __name__ == '__main__':
             x=majority[:, 0],
             y=majority[:, 1],
             ax=axe,
-            alpha=0.3,
+            alpha=0.5,
             label='majority',
         )
         sns.scatterplot(
             x=generated_data[:, 0],
             y=generated_data[:, 1],
             ax=axe,
-            alpha=0.3,
+            alpha=0.5,
             label='generated_data',
         )
         sns.scatterplot(
@@ -78,6 +77,7 @@ if __name__ == '__main__':
             y=minority[:, 1],
             ax=axe,
             alpha=1.0,
+            s=10,
             label='minority',
         )
         axe.get_legend().remove()

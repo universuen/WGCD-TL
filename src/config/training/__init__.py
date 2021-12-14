@@ -1,6 +1,6 @@
 from . import (
     classifier,
-    gan,
+    wgan,
     sngan,
     vae,
     wgangp,

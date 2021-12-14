@@ -29,10 +29,10 @@ class VAE:
             params=self.decoder.parameters(),
             lr=config.training.vae.decoder_lr,
         )
+        x = dataset[:][0]
+        x = x.to(config.device)
         for _ in tqdm(range(config.training.vae.epochs)):
             # clear gradients
-            x = dataset[:][0]
-            x = x.to(config.device)
             self.encoder.zero_grad()
             self.decoder.zero_grad()
             # calculate z, mu and sigma

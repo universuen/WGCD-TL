@@ -7,8 +7,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import StratifiedKFold
-from imblearn.over_sampling import SMOTE, ADASYN
-from imblearn.combine import SMOTEENN
+from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE
 
 import src
 from src import utils, Classifier, VAE
@@ -20,13 +19,13 @@ MODELS = (
     'Original',
     'SMOTE',
     'ADASYN',
-    'SMOTE_ENN',
-    'GAN_G',
-    'GAN_EGD',
-    'SNGAN_G',
-    'SNGAN_EGD',
+    'BorderlineSMOTE',
+    'WGAN_G',
+    'WGAN_EGD',
     'WGANGP_G',
     'WGANGP_EGD',
+    'SNGAN_G',
+    'SNGAN_EGD',
 )
 METRICS = (
     'Precision',
@@ -103,24 +102,24 @@ def train_all() -> dict:
     except (RuntimeError, ValueError):
         metric_['ADASYN'] = {k: math.nan for k in METRICS}
 
-    # SMOTE_ENN
+    # BorderlineSMOTE
     try:
         x, y = CompleteDataset(training=True)[:]
         x = x.numpy()
         y = y.numpy()
-        x, y = SMOTEENN(random_state=config.seed).fit_resample(x, y)
+        x, y = BorderlineSMOTE(random_state=config.seed).fit_resample(x, y)
         smote_enn_dataset = CompleteDataset()
         smote_enn_dataset.features = torch.from_numpy(x)
         smote_enn_dataset.labels = torch.from_numpy(y)
         utils.set_random_state()
-        classifier = Classifier('SMOTE_ENN')
+        classifier = Classifier('BorderlineSMOTE')
         classifier.train(
             training_dataset=smote_enn_dataset,
             test_dateset=CompleteDataset(training=False),
         )
-        metric_['SMOTE_ENN'] = utils.get_final_test_metrics(classifier.statistics)
+        metric_['BorderlineSMOTE'] = utils.get_final_test_metrics(classifier.statistics)
     except ValueError:
-        metric_['SMOTE_ENN'] = {k: math.nan for k in METRICS}
+        metric_['BorderlineSMOTE'] = {k: math.nan for k in METRICS}
 
     # prepare encoder
     utils.set_random_state()
@@ -128,32 +127,32 @@ def train_all() -> dict:
     vae.train(MinorityDataset(training=True))
     vae.load_model()
 
-    # GAN_G
+    # WGAN_G
     utils.set_random_state()
-    gan = src.GAN()
-    gan.train(MinorityDataset(training=True))
-    gan.load_model()
+    wgan = src.WGAN()
+    wgan.train(MinorityDataset(training=True))
+    wgan.load_model()
     utils.set_random_state()
-    classifier = Classifier('GAN_G')
+    classifier = Classifier('WGAN_G')
     classifier.g_train(
-        generator=gan.generator,
+        generator=wgan.generator,
         training_dataset=CompleteDataset(training=True),
         test_dateset=CompleteDataset(training=False),
     )
-    metric_['GAN_G'] = utils.get_final_test_metrics(classifier.statistics)
+    metric_['WGAN_G'] = utils.get_final_test_metrics(classifier.statistics)
 
-    # GAN_EGD
+    # WGAN_EGD
     utils.set_random_state()
-    classifier = Classifier('GAN_EGD')
+    classifier = Classifier('WGAN_EGD')
     classifier.egd_train(
         encoder=vae.encoder,
-        generator=gan.generator,
-        discriminator=gan.discriminator,
+        generator=wgan.generator,
+        discriminator=wgan.discriminator,
         training_dataset=CompleteDataset(training=True),
         test_dateset=CompleteDataset(training=False),
         seed_dataset=MinorityDataset(training=True),
     )
-    metric_['GAN_EGD'] = utils.get_final_test_metrics(classifier.statistics)
+    metric_['WGAN_EGD'] = utils.get_final_test_metrics(classifier.statistics)
 
     # SNGAN_G
     utils.set_random_state()
