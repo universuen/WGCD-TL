@@ -95,9 +95,24 @@ if __name__ == '__main__':
     ).fit_transform(x)
     result['SNGAN'] = [embedded_x, y]
 
+    # HLGAN
+    src.utils.set_random_state()
+    gan = src.HLGAN()
+    gan.train(src.dataset.MinorityDataset())
+    z = torch.randn([len(raw_y) - int(2 * sum(raw_y)), src.config.data.z_size], device=src.config.device)
+    x = np.concatenate([raw_x, gan.generator(z).detach().cpu().numpy()])
+    y = np.concatenate([raw_y, np.full(len(x) - len(raw_x), 2)])
+    embedded_x = TSNE(
+        learning_rate='auto',
+        init='random',
+        random_state=src.config.seed,
+    ).fit_transform(x)
+    result['HLGAN'] = [embedded_x, y]
+
     sns.set_theme()
-    _, axes = plt.subplots(2, 3)
+    _, axes = plt.subplots(3, 3)
     for (key, value), axe in zip(result.items(), axes.flat):
+        print(key)
         axe.set(xticklabels=[])
         axe.set(yticklabels=[])
         axe.set(title=key)

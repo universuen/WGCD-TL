@@ -21,7 +21,7 @@ class Classifier:
             name: str,
     ):
         self.name = name
-        self.model = ClassifierModel().to(config.device)
+        self.model = ClassifierModel()
         self.logger = Logger(name)
         self.statistics = {
             'Loss': [],
@@ -39,6 +39,9 @@ class Classifier:
     ) -> None:
 
         self.logger.info('Started training')
+        # set device to cpu to speed up training precess
+        former_device = config.device
+        config.device = 'cpu'
         self.logger.debug(f'Using device: {config.device}')
 
         dl = DataLoader(
@@ -70,6 +73,8 @@ class Classifier:
 
         self._plot()
         self.logger.info('Finished training')
+        # reset to former device
+        config.device = former_device
 
     def g_train(
             self,
@@ -79,6 +84,10 @@ class Classifier:
     ) -> None:
 
         self.logger.info('Started training with generator')
+        # set device to cpu to speed up training precess
+        former_device = config.device
+        config.device = 'cpu'
+        generator.to('cpu')
         self.logger.debug(f'Using device: {config.device}')
 
         dl = DataLoader(
@@ -116,6 +125,9 @@ class Classifier:
 
         self._plot()
         self.logger.info('Finished training')
+        # reset to former device
+        config.device = former_device
+        generator.to(former_device)
 
     def egd_train(
             self,
@@ -128,6 +140,12 @@ class Classifier:
     ) -> None:
 
         self.logger.info('Started training with encoder, generator and discriminator')
+        # set device to cpu to speed up training precess
+        former_device = config.device
+        config.device = 'cpu'
+        encoder.to('cpu')
+        generator.to('cpu')
+        discriminator.to('cpu')
         self.logger.debug(f'Using device: {config.device}')
 
         dl = DataLoader(
@@ -189,6 +207,11 @@ class Classifier:
 
         self._plot()
         self.logger.info('Finished training')
+        # reset to former device
+        config.device = former_device
+        encoder.to(former_device)
+        generator.to(former_device)
+        discriminator.to(former_device)
 
     def _test(self, test_dataset):
         with torch.no_grad():

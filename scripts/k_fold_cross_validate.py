@@ -26,6 +26,8 @@ MODELS = (
     'WGANGP_EGD',
     'SNGAN_G',
     'SNGAN_EGD',
+    'HLGAN_G',
+    'HLGAN_EGD',
 )
 METRICS = (
     'Precision',
@@ -154,6 +156,33 @@ def train_all() -> dict:
     )
     metric_['WGAN_EGD'] = utils.get_final_test_metrics(classifier.statistics)
 
+    # WGANGP_G
+    utils.set_random_state()
+    wgangp = src.WGANGP()
+    wgangp.train(MinorityDataset(training=True))
+    wgangp.load_model()
+    utils.set_random_state()
+    classifier = Classifier('WGANGP_G')
+    classifier.g_train(
+        generator=wgangp.generator,
+        training_dataset=CompleteDataset(training=True),
+        test_dateset=CompleteDataset(training=False),
+    )
+    metric_['WGANGP_G'] = utils.get_final_test_metrics(classifier.statistics)
+
+    # WGANGP_EGD
+    utils.set_random_state()
+    classifier = Classifier('WGANGP_EGD')
+    classifier.egd_train(
+        encoder=vae.encoder,
+        generator=wgangp.generator,
+        discriminator=wgangp.discriminator,
+        training_dataset=CompleteDataset(training=True),
+        test_dateset=CompleteDataset(training=False),
+        seed_dataset=MinorityDataset(training=True),
+    )
+    metric_['WGANGP_EGD'] = utils.get_final_test_metrics(classifier.statistics)
+
     # SNGAN_G
     utils.set_random_state()
     sngan = src.SNGAN()
@@ -181,32 +210,32 @@ def train_all() -> dict:
     )
     metric_['SNGAN_EGD'] = utils.get_final_test_metrics(classifier.statistics)
 
-    # WGANGP_G
+    # HLGAN_G
     utils.set_random_state()
-    wgangp = src.WGANGP()
-    wgangp.train(MinorityDataset(training=True))
-    wgangp.load_model()
+    hlgan = src.HLGAN()
+    hlgan.train(MinorityDataset(training=True))
+    hlgan.load_model()
     utils.set_random_state()
-    classifier = Classifier('WGANGP_G')
+    classifier = Classifier('HLGAN_G')
     classifier.g_train(
-        generator=wgangp.generator,
+        generator=hlgan.generator,
         training_dataset=CompleteDataset(training=True),
         test_dateset=CompleteDataset(training=False),
     )
-    metric_['WGANGP_G'] = utils.get_final_test_metrics(classifier.statistics)
+    metric_['HLGAN_G'] = utils.get_final_test_metrics(classifier.statistics)
 
-    # WGANGP_EGD
+    # HLGAN_EGD
     utils.set_random_state()
-    classifier = Classifier('WGANGP_EGD')
+    classifier = Classifier('HLGAN_EGD')
     classifier.egd_train(
         encoder=vae.encoder,
-        generator=wgangp.generator,
-        discriminator=wgangp.discriminator,
+        generator=hlgan.generator,
+        discriminator=hlgan.discriminator,
         training_dataset=CompleteDataset(training=True),
         test_dateset=CompleteDataset(training=False),
         seed_dataset=MinorityDataset(training=True),
     )
-    metric_['WGANGP_EGD'] = utils.get_final_test_metrics(classifier.statistics)
+    metric_['HLGAN_EGD'] = utils.get_final_test_metrics(classifier.statistics)
 
     return metric_
 

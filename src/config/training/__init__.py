@@ -4,4 +4,5 @@ from . import (
     sngan,
     vae,
     wgangp,
+    hlgan,
 )
