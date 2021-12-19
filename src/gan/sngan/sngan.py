@@ -1,11 +1,11 @@
 import torch
 
 from src import config
-from src._gan_base import GANBase
-from .model import DiscriminatorModel, GeneratorModel
+from src.gan._gan_base import GANBase
+from .models import DiscriminatorModel, GeneratorModel
 
 
-class WGANGP(GANBase):
+class SNGAN(GANBase):
 
     def __init__(self):
         generator = GeneratorModel().to(config.device)
@@ -15,15 +15,15 @@ class WGANGP(GANBase):
             discriminator=discriminator,
             generator_optimizer=torch.optim.Adam(
                 params=generator.parameters(),
-                lr=config.training.wgangp.generator_lr,
+                lr=config.training.sngan.generator_lr,
                 betas=(0.5, 0.9),
             ),
             discriminator_optimizer=torch.optim.Adam(
                 params=discriminator.parameters(),
-                lr=config.training.wgangp.discriminator_lr,
+                lr=config.training.sngan.discriminator_lr,
                 betas=(0.5, 0.9),
             ),
-            training_config=config.training.wgangp,
+            training_config=config.training.sngan,
         )
 
     def _train_discriminator(self, x: torch.Tensor) -> float:
@@ -34,8 +34,7 @@ class WGANGP(GANBase):
         fake_x = self.generator(z).detach()
         prediction_fake = self.discriminator(fake_x)
         loss_fake = prediction_fake.mean()
-        gradient_penalty = self._cal_gradient_penalty(x, fake_x)
-        loss = loss_real + loss_fake + gradient_penalty
+        loss = loss_real + loss_fake
         loss.backward()
         self.discriminator_optimizer.step()
         return loss.item()
@@ -49,23 +48,3 @@ class WGANGP(GANBase):
         loss.backward()
         self.generator_optimizer.step()
         return loss.item()
-
-    def _cal_gradient_penalty(
-            self,
-            x: torch.Tensor,
-            fake_x: torch.Tensor,
-    ) -> torch.Tensor:
-        alpha = torch.rand(len(x), 1).to(config.device)
-        interpolates = alpha * x + (1 - alpha) * fake_x
-        interpolates.requires_grad = True
-        disc_interpolates = self.discriminator(interpolates)
-        gradients = torch.autograd.grad(
-            outputs=disc_interpolates,
-            inputs=interpolates,
-            grad_outputs=torch.ones(disc_interpolates.size()).to(config.device),
-            create_graph=True,
-            retain_graph=True,
-            only_inputs=True,
-        )[0]
-        gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * config.training.wgangp.gp_lambda
-        return gradient_penalty

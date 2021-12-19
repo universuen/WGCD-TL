@@ -2,13 +2,12 @@ import torch
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from src import config
-from src._gan_base import GANBase
-from .model import DiscriminatorModel, GeneratorModel
+from src import config, utils
+from src.gan._gan_base import GANBase
+from .models import DiscriminatorModel, GeneratorModel
 
 
-# Hidden Loss GAN
-class HLGAN(GANBase):
+class WGANGPHL(GANBase):
 
     def __init__(self):
         generator = GeneratorModel().to(config.device)
@@ -18,15 +17,15 @@ class HLGAN(GANBase):
             discriminator=discriminator,
             generator_optimizer=torch.optim.Adam(
                 params=generator.parameters(),
-                lr=config.training.hlgan.generator_lr,
+                lr=config.training.wgan_gp_hl.generator_lr,
                 betas=(0.5, 0.9),
             ),
             discriminator_optimizer=torch.optim.Adam(
                 params=discriminator.parameters(),
-                lr=config.training.hlgan.discriminator_lr,
+                lr=config.training.wgan_gp_hl.discriminator_lr,
                 betas=(0.5, 0.9),
             ),
-            training_config=config.training.hlgan,
+            training_config=config.training.wgan_gp_hl,
         )
         self.statistics['hidden_loss'] = []
 
@@ -38,14 +37,14 @@ class HLGAN(GANBase):
         fake_x = self.generator(z).detach()
         prediction_fake = self.discriminator(fake_x)
         loss_fake = prediction_fake.mean()
-        loss = loss_real + loss_fake
+        gradient_penalty = self._cal_gradient_penalty(x, fake_x)
+        loss = loss_real + loss_fake + gradient_penalty
         loss.backward()
         self.discriminator_optimizer.step()
         return loss.item()
 
     def _train_generator(self, x_len: int) -> float:
         self.generator.zero_grad()
-
         # get the hidden output of real x
         real_x_hidden_output = self.discriminator.hidden_output.detach()
 
@@ -56,22 +55,22 @@ class HLGAN(GANBase):
         fake_x_hidden_output = self.discriminator.hidden_output
 
         cal_kl_div = torch.nn.KLDivLoss(reduction='batchmean')
-        real_x_hidden_distribution = self._resize(real_x_hidden_output)
-        fake_x_hidden_distribution = self._resize(fake_x_hidden_output)
+        real_x_hidden_distribution = utils.normalize(real_x_hidden_output)
+        fake_x_hidden_distribution = utils.normalize(fake_x_hidden_output)
         hidden_loss = cal_kl_div(
             input=fake_x_hidden_distribution,
             target=real_x_hidden_distribution,
-        ) * config.training.hlgan.hl_lambda
+        ) * config.training.wgan_hl.hl_lambda
 
         # hidden_loss = torch.norm(
-        #     input=fake_x_hidden_output - real_x_hidden_output,
+        #     input=real_x_hidden_output - fake_x_hidden_output,
         #     p=2,
-        # ) * config.training.hlgan.hl_lambda
+        # ) * config.training.wgan_hl.hl_lambda
 
         # hidden_loss = torch.cosine_similarity(
         #     fake_x_hidden_output,
         #     real_x_hidden_output,
-        # ).mean() * config.training.hlgan.hl_lambda
+        # ).mean() * config.training.wgan_hl.hl_lambda
 
         self.statistics['hidden_loss'].append(hidden_loss.item())
         loss = -final_output.mean() + hidden_loss
@@ -79,12 +78,30 @@ class HLGAN(GANBase):
         self.generator_optimizer.step()
         return loss.item()
 
-    @staticmethod
-    def _resize(x):
-        return (x - x.min()) / (x.max() - x.min())
+    def _cal_gradient_penalty(
+            self,
+            x: torch.Tensor,
+            fake_x: torch.Tensor,
+    ) -> torch.Tensor:
+        alpha = torch.rand(len(x), 1).to(config.device)
+        interpolates = alpha * x + (1 - alpha) * fake_x
+        interpolates.requires_grad = True
+        disc_interpolates = self.discriminator(interpolates)
+        gradients = torch.autograd.grad(
+            outputs=disc_interpolates,
+            inputs=interpolates,
+            grad_outputs=torch.ones(disc_interpolates.size()).to(config.device),
+            create_graph=True,
+            retain_graph=True,
+            only_inputs=True,
+        )[0]
+        gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * config.training.wgan_gp_hl.gp_lambda
+        return gradient_penalty
 
     def _plot(self):
         sns.set()
+        plt.figure(self.__class__.__name__)
+        plt.clf()
         plt.title(f"{self.__class__.__name__} Generator and Discriminator Loss During Training")
         plt.plot(self.statistics['generator_loss'], label="Generator")
         plt.plot(self.statistics['discriminator_loss'], label="Discriminator")

@@ -19,7 +19,6 @@ class GeneratorModel(nn.Module):
             nn.BatchNorm1d(32),
             nn.LeakyReLU(0.2),
             nn.Linear(32, config.data.x_size),
-            # nn.Sigmoid(),
         )
         self.apply(init_weights)
 

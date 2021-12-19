@@ -1,4 +1,5 @@
 import random
+from math import sqrt
 
 import torch
 from torch import nn
@@ -6,7 +7,7 @@ from torch.nn.functional import binary_cross_entropy
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import numpy as np
-from sklearn.metrics import precision_recall_fscore_support, accuracy_score, roc_auc_score
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score, roc_auc_score, confusion_matrix
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -27,8 +28,10 @@ class Classifier:
             'Loss': [],
             'Precision': [],
             'Recall': [],
-            'F1': [],
+            'Specificity': [],
             'Accuracy': [],
+            'F1': [],
+            'G-Mean': [],
             'AUC': [],
         }
 
@@ -220,26 +223,30 @@ class Classifier:
             x = x.to(config.device)
             prob = self.model(x)
             predicted_label = self._prob2label(prob)
-            precision, recall, f1, _ = precision_recall_fscore_support(
+            tn, fp, fn, tp = confusion_matrix(
                 y_true=label,
                 y_pred=predicted_label,
-                pos_label=1,
-                average='binary',
-                zero_division=0,
-            )
-            accuracy = accuracy_score(
-                y_true=label,
-                y_pred=predicted_label,
-                normalize=True,
-            )
+            ).ravel()
+
+            precision = tp / (tp + fp) if tp + fp != 0 else 0
+            recall = tp / (tp + fn) if tp + fn != 0 else 0
+            specificity = tn / (tn + fp) if tn + fp != 0 else 0
+            accuracy = (tp + tn) / (tp + tn + fp + fn) if tp + tn + fp + fn != 0 else 0
+
+            f1 = 2 * recall * precision / (recall + precision) if recall + precision != 0 else 0
+            g_mean = sqrt(recall * specificity)
+
             auc = roc_auc_score(
                 y_true=label,
                 y_score=predicted_label,
             )
+
             self.statistics['Precision'].append(precision)
             self.statistics['Recall'].append(recall)
-            self.statistics['F1'].append(f1)
+            self.statistics['Specificity'].append(specificity)
             self.statistics['Accuracy'].append(accuracy)
+            self.statistics['F1'].append(f1)
+            self.statistics['G-Mean'].append(g_mean)
             self.statistics['AUC'].append(auc)
             self.model.train()
 

@@ -49,6 +49,8 @@ class VAE:
             encoder_optimizer.step()
             decoder_optimizer.step()
 
+        self.encoder.eval()
+        self.decoder.eval()
         self._plot()
         self._save_model()
         self.logger.info("Finished training")

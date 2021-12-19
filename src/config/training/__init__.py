@@ -3,6 +3,8 @@ from . import (
     wgan,
     sngan,
     vae,
-    wgangp,
-    hlgan,
+    wgan_gp,
+    sngan_hl,
+    wgan_hl,
+    wgan_gp_hl,
 )

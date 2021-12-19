@@ -1,11 +1,11 @@
 import torch
 
 from src import config
-from src._gan_base import GANBase
-from .model import DiscriminatorModel, GeneratorModel
+from src.gan._gan_base import GANBase
+from .models import DiscriminatorModel, GeneratorModel
 
 
-class SNGAN(GANBase):
+class WGAN(GANBase):
 
     def __init__(self):
         generator = GeneratorModel().to(config.device)
@@ -13,17 +13,15 @@ class SNGAN(GANBase):
         super().__init__(
             generator=generator,
             discriminator=discriminator,
-            generator_optimizer=torch.optim.Adam(
+            generator_optimizer=torch.optim.RMSprop(
                 params=generator.parameters(),
-                lr=config.training.sngan.generator_lr,
-                betas=(0.5, 0.9),
+                lr=config.training.wgan.generator_lr,
             ),
-            discriminator_optimizer=torch.optim.Adam(
+            discriminator_optimizer=torch.optim.RMSprop(
                 params=discriminator.parameters(),
-                lr=config.training.sngan.discriminator_lr,
-                betas=(0.5, 0.9),
+                lr=config.training.wgan.discriminator_lr,
             ),
-            training_config=config.training.sngan,
+            training_config=config.training.wgan,
         )
 
     def _train_discriminator(self, x: torch.Tensor) -> float:
@@ -37,6 +35,8 @@ class SNGAN(GANBase):
         loss = loss_real + loss_fake
         loss.backward()
         self.discriminator_optimizer.step()
+        for p in self.discriminator.parameters():
+            p.data.clamp_(config.training.wgan.lower_clamp, config.training.wgan.upper_clamp)
         return loss.item()
 
     def _train_generator(self, x_len: int) -> float:
@@ -48,3 +48,4 @@ class SNGAN(GANBase):
         loss.backward()
         self.generator_optimizer.step()
         return loss.item()
+

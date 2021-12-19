@@ -1,6 +1,4 @@
 import random
-import glob
-from os.path import basename
 
 import torch
 from torch import nn
@@ -98,5 +96,5 @@ def get_final_test_metrics(statistics: dict):
     return metrics
 
 
-def get_all_datasets() -> list[str]:
-    return [basename(p) for p in glob.glob(str(config.path.data / '*.dat'))]
+def normalize(x: torch.Tensor) -> torch.Tensor:
+    return (x - x.min()) / (x.max() - x.min())

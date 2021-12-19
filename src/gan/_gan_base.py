@@ -32,7 +32,7 @@ class GANBase:
             'generator_loss': [],
         }
 
-    def train(self, dataset: Dataset, plot: bool = False):
+    def train(self, dataset: Dataset):
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
 
@@ -48,8 +48,7 @@ class GANBase:
         self.generator.eval()
         self.discriminator.eval()
         self._save_model()
-        if plot:
-            self._plot()
+        self._plot()
         self.logger.info(f'Finished training')
 
     @abstractmethod
@@ -71,6 +70,8 @@ class GANBase:
 
     def _plot(self):
         sns.set()
+        plt.figure(self.__class__.__name__)
+        plt.clf()
         plt.title(f"{self.__class__.__name__} Generator and Discriminator Loss During Training")
         plt.plot(self.statistics['generator_loss'], label="Generator")
         plt.plot(self.statistics['discriminator_loss'], label="Discriminator")
