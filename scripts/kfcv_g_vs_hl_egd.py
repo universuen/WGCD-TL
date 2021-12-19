@@ -12,6 +12,7 @@ from src import config
 
 K = 5
 
+
 GANS = [
     src.WGAN,
     src.WGANGP,
@@ -124,11 +125,11 @@ def highlight_higher_cell(s: pd.Series) -> list[str]:
         else:
             result_.append('')
             result_.append('')
+    result_[np.argmax(s)] = 'background-color: green'
     return result_
 
 
 def train_all() -> dict:
-    config.training.wgan.epochs = 1000
     metric_ = dict()
     utils.set_x_size()
 

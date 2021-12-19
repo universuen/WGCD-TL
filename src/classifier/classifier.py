@@ -23,7 +23,7 @@ class Classifier:
     ):
         self.name = name
         self.model = ClassifierModel()
-        self.logger = Logger(name)
+        self.logger = Logger(f'{name}_Classifier')
         self.statistics = {
             'Loss': [],
             'Precision': [],
@@ -270,7 +270,6 @@ class Classifier:
         plt.clf()
         self.logger.debug(f'Saved loss plot at {loss_plot_path}')
 
-        sns.set()
         plt.title(f"{self.name} Classifier Test Metrics During Training")
         plt.xlabel("Iteration")
         plt.ylabel("Value")

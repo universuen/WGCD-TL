@@ -70,8 +70,6 @@ class GANBase:
 
     def _plot(self):
         sns.set()
-        plt.figure(self.__class__.__name__)
-        plt.clf()
         plt.title(f"{self.__class__.__name__} Generator and Discriminator Loss During Training")
         plt.plot(self.statistics['generator_loss'], label="Generator")
         plt.plot(self.statistics['discriminator_loss'], label="Discriminator")
