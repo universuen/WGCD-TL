@@ -132,6 +132,72 @@ class Classifier:
         config.device = former_device
         generator.to(former_device)
 
+    def eg_train(
+            self,
+            encoder: nn.Module,
+            generator: nn.Module,
+            training_dataset: Dataset,
+            test_dateset: Dataset,
+            seed_dataset: Dataset,
+    ) -> None:
+
+        self.logger.info('Started training with encoder and generator')
+        # set device to cpu to speed up training precess
+        former_device = config.device
+        config.device = 'cpu'
+        encoder.to('cpu')
+        generator.to('cpu')
+        self.logger.debug(f'Using device: {config.device}')
+
+        dl = DataLoader(
+            dataset=training_dataset,
+            batch_size=config.training.classifier.batch_size,
+            shuffle=True,
+            drop_last=True,
+        )
+        optimizer = torch.optim.Adam(
+            params=self.model.parameters(),
+            lr=config.training.classifier.lr,
+            betas=(0.5, 0.9),
+        )
+
+        for _ in tqdm(range(config.training.classifier.epochs)):
+            for x, label in dl:
+                self.model.zero_grad()
+                x = x.to(config.device)
+
+                label = label.to(config.device)
+                real_minority_num = int(label.sum().item())
+                fake_minority_num = len(x) - 2 * real_minority_num
+
+                if fake_minority_num > 0:
+                    seed = random.choice(seed_dataset[:][0]).to(config.device)
+                    seed = torch.stack([seed for _ in range(fake_minority_num)]).to(config.device)
+                    z, _, _ = encoder(seed)
+                    supplement_x = generator(z).detach()
+                    balanced_x = torch.cat([x, supplement_x])
+                    balanced_label = torch.cat([label, torch.ones(fake_minority_num, device=config.device)])
+                else:
+                    balanced_x = x
+                    balanced_label = label
+
+                prediction = self.model(balanced_x).squeeze()
+                loss = binary_cross_entropy(
+                    input=prediction,
+                    target=balanced_label,
+                )
+                loss.backward()
+                optimizer.step()
+                self.statistics['Loss'].append(loss.item())
+            self._test(test_dateset)
+
+        self._plot()
+        self.logger.info('Finished training')
+        # reset to former device
+        config.device = former_device
+        encoder.to(former_device)
+        generator.to(former_device)
+
     def egd_train(
             self,
             encoder: nn.Module,

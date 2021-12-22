@@ -232,7 +232,7 @@ def train_all() -> dict:
     vae = VAE()
     vae.train(MinorityDataset(training=True))
 
-    # GAN_EGD
+    # GANHL_EGD
     utils.set_random_state()
     gan = GAN()
     gan.train(MinorityDataset(training=True))
