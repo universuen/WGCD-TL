@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import StratifiedKFold
-from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE
+from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE, RandomOverSampler
 
 import src
 from src import utils, Classifier, VAE
@@ -20,6 +20,7 @@ TRADITIONAL_METHODS = [
     SMOTE,
     ADASYN,
     BorderlineSMOTE,
+    RandomOverSampler,
 ]
 
 GAN = src.SNGANHL
@@ -102,7 +103,6 @@ DATASETS = [
     'yeast4.dat',
     'yeast5.dat',
     'yeast6.dat',
-
 ]
 
 WGANHL_DATASETS = [

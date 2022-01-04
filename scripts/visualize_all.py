@@ -5,13 +5,14 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
-from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE
+from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE, RandomOverSampler
 
 import src
 
 DATASET = 'pima.dat'
 
 TRADITIONAL_METHODS = [
+    RandomOverSampler,
     SMOTE,
     ADASYN,
     BorderlineSMOTE,

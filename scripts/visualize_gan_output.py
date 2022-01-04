@@ -10,7 +10,7 @@ from sklearn.manifold import TSNE
 
 import src
 
-TARGET_GAN = src.WGANHL
+TARGET_GAN = src.GAN
 
 if __name__ == '__main__':
     result = dict()
@@ -121,6 +121,7 @@ if __name__ == '__main__':
         result[dataset_name] = [embedded_x, y]
 
     sns.set_theme()
+    plt.close('all')
     _, axes = plt.subplots(3, 3)
     for (key, value), axe in zip(result.items(), axes.flat):
         axe.set(xticklabels=[])

@@ -98,3 +98,6 @@ def get_final_test_metrics(statistics: dict):
 
 def normalize(x: torch.Tensor) -> torch.Tensor:
     return (x - x.min()) / (x.max() - x.min())
+
+if __name__ == '__main__':
+    prepare_dataset('yeast1.dat')

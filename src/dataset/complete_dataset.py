@@ -41,3 +41,7 @@ class CompleteDataset(Base):
         if self.target_transform:
             label = self.target_transform(label)
         return feature, label
+
+
+if __name__ == '__main__':
+    CompleteDataset()

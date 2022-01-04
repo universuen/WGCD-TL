@@ -12,8 +12,8 @@ from src import config
 
 K = 5
 
-GAN = src.SNGAN
-GANHL = src.SNGANHL
+GAN = src.WGAN
+GANHL = src.WGANHL
 
 DATASETS = [
     'dermatology-6.dat',
@@ -265,7 +265,7 @@ if __name__ == '__main__':
             f.write(f'{file_name}\n')
             f.write(f'{result[file_name]}\n\n')
 
-    with pd.ExcelWriter(config.path.data / 'ablation_exp_result.xlsx') as writer:
+    with pd.ExcelWriter(config.path.data / 'all_wgan_ablation_exp_result.xlsx') as writer:
         for filename, df in result.items():
             df.to_excel(writer, filename.split('.')[0])
             for column in df:
