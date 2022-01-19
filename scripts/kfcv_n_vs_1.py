@@ -1,7 +1,5 @@
 import context
 
-import math
-
 import torch
 import pandas as pd
 import numpy as np
@@ -145,7 +143,7 @@ def train_all() -> dict:
             )
             metric_[M.__name__] = utils.get_final_test_metrics(classifier.statistics)
         except (RuntimeError, ValueError):
-            metric_[M.__name__] = {k: math.nan for k in METRICS}
+            metric_[M.__name__] = {k: 0 for k in METRICS}
 
     # prepare encoder
     utils.set_random_state()

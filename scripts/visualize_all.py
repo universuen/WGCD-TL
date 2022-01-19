@@ -9,7 +9,7 @@ from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE, RandomOverSam
 
 import src
 
-DATASET = 'pima.dat'
+DATASET = 'yeast5.dat'
 
 TRADITIONAL_METHODS = [
     RandomOverSampler,
@@ -19,9 +19,11 @@ TRADITIONAL_METHODS = [
 ]
 
 GAN_MODELS = [
+    src.GAN,
     src.WGAN,
     src.WGANGP,
     src.SNGAN,
+    src.GANHL,
     src.WGANHL,
     src.WGANGPHL,
     src.SNGANHL,
@@ -62,7 +64,7 @@ if __name__ == '__main__':
         result[M.__name__] = [embedded_x, y]
 
     sns.set_theme()
-    fig, axes = plt.subplots(3, 3)
+    fig, axes = plt.subplots(3, 4)
     for (key, value), axe in zip(result.items(), axes.flat):
         print(key)
         axe.set(xticklabels=[])
