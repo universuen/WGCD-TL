@@ -1,1 +1,2 @@
-# Graduation Project
+# VGAN-BL
+Source code of VGAN-BL
