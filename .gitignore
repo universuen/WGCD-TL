@@ -8,6 +8,5 @@ __pycache__/
 # virtual environment
 venv/
 
-# others
-data/
-plots/
+# binary data
+#data/
