@@ -1,5 +1,6 @@
 from numpy import ndarray
 
+from .basic_dataset import BasicDataset
 from .full_dataset import FullDataset
 from .negative_dataset import NegativeDataset
 from .positive_dataset import PositiveDataset

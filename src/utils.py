@@ -4,9 +4,9 @@ import torch
 import numpy as np
 import pandas as pd
 from torch import nn
-from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split
 
+import src
 from src import config, datasets, models
 
 
@@ -60,12 +60,12 @@ def preprocess_data(file_name: str) -> (np.ndarray, np.ndarray):
     labels[labels[:] == 'negative'] = 0
     labels = labels.astype('int')
     # normalize samples
-    samples = minmax_scale(samples)
+    samples = normalize(samples.astype('float32'))
     models.x_size = samples.shape[1]
     return samples, labels
 
 
-def prepare_dataset(name: str, training_test_ratio: float = 0.8):
+def prepare_dataset(name: str, training_test_ratio: float = 0.8) -> None:
     samples, labels = preprocess_data(name)
     training_samples, test_samples, training_labels, test_labels = train_test_split(
         samples,
@@ -77,3 +77,83 @@ def prepare_dataset(name: str, training_test_ratio: float = 0.8):
     datasets.training_labels = training_labels
     datasets.test_samples = test_samples
     datasets.test_labels = test_labels
+
+
+def get_final_test_metrics(statistics: dict) -> dict:
+    metrics = dict()
+    for name, values in statistics.items():
+        if name == 'Loss':
+            continue
+        else:
+            metrics[name] = values[-1]
+    return metrics
+
+
+def normalize(x: torch.Tensor) -> torch.Tensor:
+    return (x - x.min()) / (x.max() - x.min())
+
+
+def get_knn_indices(sample: torch.Tensor, all_samples: torch.Tensor, k: int = 5) -> torch.Tensor:
+    dist = torch.empty(len(all_samples))
+    for i, v in enumerate(all_samples):
+        dist[i] = torch.norm(sample - v, p=2)
+    return torch.topk(dist, k, largest=False).indices
+
+
+def get_rgan_dataset() -> datasets.FullDataset:
+    vae = src.vae.VAE()
+    vae.fit()
+    rgan = src.gans.RSNGAN()
+    rgan.fit()
+
+    full_dataset = src.datasets.FullDataset().to(src.config.device)
+    pos_dataset = src.datasets.PositiveDataset().to(src.config.device)
+    neg_dataset = src.datasets.NegativeDataset().to(src.config.device)
+
+    # count negative samples in the overlapping area
+    ol_neg_cnt = 0
+    for i in neg_dataset.samples:
+        indices = get_knn_indices(i, full_dataset.samples)
+        labels = full_dataset.labels[indices]
+        if 1 in labels:
+            ol_neg_cnt += 1
+
+    # count positive samples in the overlapping area
+    ol_pos_cnt = 0
+    for i in pos_dataset.samples:
+        indices = get_knn_indices(i, full_dataset.samples)
+        labels = full_dataset.labels[indices]
+        if 0 in labels:
+            ol_pos_cnt += 1
+
+    target_dataset = src.datasets.FullDataset().to(src.config.device)
+    # generate positive samples until reaching balance
+    total_pos_cnt = len(pos_dataset)
+    total_neg_cnt = len(neg_dataset)
+    while True:
+        if total_pos_cnt >= total_neg_cnt or ol_pos_cnt >= ol_neg_cnt:
+            break
+        else:
+            # update the number of positive samples
+            z = vae.generate_z()
+            new_sample = rgan.generate_samples(z)
+            new_label = torch.tensor([1], device=src.config.device)
+            target_dataset.samples = torch.cat(
+                [
+                    target_dataset.samples,
+                    new_sample,
+                ],
+            )
+            target_dataset.labels = torch.cat(
+                [
+                    target_dataset.labels,
+                    new_label,
+                ]
+            )
+            total_pos_cnt += 1
+            # update the number of overlapping positive samples
+            indices = get_knn_indices(new_sample, full_dataset.samples)
+            labels = full_dataset.labels[indices]
+            if 0 in labels:
+                ol_pos_cnt += 1
+    return target_dataset

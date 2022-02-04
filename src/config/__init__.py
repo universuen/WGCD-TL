@@ -1,9 +1,11 @@
 import torch
 
 from . import (
+    classifier,
     gan,
     logger,
     path,
+    tr_ada_boost,
     vae,
 )
 
