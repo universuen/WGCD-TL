@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn.utils.parametrizations import spectral_norm
 
-from src import config
+from src import models
 from src.utils import init_weights
 
 
@@ -10,7 +10,7 @@ class SNGANDModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.step_1 = nn.Sequential(
-            spectral_norm(nn.Linear(config.x_size, 128)),
+            spectral_norm(nn.Linear(models.x_size, 128)),
             nn.LeakyReLU(0.2),
             spectral_norm(nn.Linear(128, 256)),
             nn.LeakyReLU(0.2),

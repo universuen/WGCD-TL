@@ -1,32 +1,22 @@
 from typing import Callable
 
 import torch
-import numpy as np
-from torch.utils.data import Dataset as Base
+from torch.utils.data import Dataset
 
-from src import config
+from src import datasets
 
 
-class FullDataset(Base):
+class FullDataset(Dataset):
     def __init__(
             self,
             training: bool = True,
             transform: Callable = None,
             target_transform: Callable = None,
     ):
-        if training is True:
-            samples_path = config.path.processed_datasets / 'training_samples.npy'
-            labels_path = config.path.processed_datasets / 'training_labels.npy'
-        else:
-            samples_path = config.path.processed_datasets / 'test_samples.npy'
-            labels_path = config.path.processed_datasets / 'test_labels.npy'
-
-        self.samples = torch.from_numpy(
-            np.load(str(samples_path))
-        ).float()
-        self.labels = torch.from_numpy(
-            np.load(str(labels_path))
-        ).float()
+        self.samples = datasets.training_samples if training else datasets.test_samples
+        self.samples = torch.from_numpy(self.samples).float()
+        self.labels = datasets.training_labels if training else datasets.test_labels
+        self.labels = torch.from_numpy(self.labels).float()
         self.transform = transform
         self.target_transform = target_transform
 
@@ -36,8 +26,6 @@ class FullDataset(Base):
     def __getitem__(self, item):
         sample = self.samples[item]
         label = self.labels[item]
-        if self.transform:
-            sample = self.transform(sample)
-        if self.target_transform:
-            label = self.target_transform(label)
+        sample = self.transform(sample) if self.transform else sample
+        label = self.target_transform(label) if self.target_transform else label
         return sample, label

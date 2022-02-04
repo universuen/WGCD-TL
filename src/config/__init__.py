@@ -1,8 +1,8 @@
 import torch
 
 from . import (
-    gans,
-    logger, 
+    gan,
+    logger,
     path,
     vae,
 )
@@ -10,11 +10,8 @@ from . import (
 # random seed
 seed = 0
 
-# number of sample features (dynamically set during running)
-x_size: int = None
-
 # device used for training
-device: str = 'cpu'
+device: str = 'auto'
 
 if device == 'auto':
     if torch.cuda.is_available():

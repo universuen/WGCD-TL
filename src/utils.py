@@ -7,7 +7,7 @@ from torch import nn
 from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split
 
-from src import config
+from src import config, datasets, models
 
 
 def init_weights(layer: nn.Module):
@@ -36,7 +36,7 @@ def set_random_state(seed: int = None) -> None:
 def preprocess_data(file_name: str) -> (np.ndarray, np.ndarray):
     set_random_state()
     # concatenate the file path
-    file_path = config.path.raw_datasets / file_name
+    file_path = config.path.datasets / file_name
     # calculate skip rows
     skip_rows = 0
     with open(file_path, 'r') as f:
@@ -61,7 +61,7 @@ def preprocess_data(file_name: str) -> (np.ndarray, np.ndarray):
     labels = labels.astype('int')
     # normalize samples
     samples = minmax_scale(samples)
-    config.x_size = samples.shape[1]
+    models.x_size = samples.shape[1]
     return samples, labels
 
 
@@ -73,7 +73,7 @@ def prepare_dataset(name: str, training_test_ratio: float = 0.8):
         train_size=training_test_ratio,
         random_state=config.seed,
     )
-    np.save(str(config.path.processed_datasets / 'training_samples.npy'), training_samples)
-    np.save(str(config.path.processed_datasets / 'test_samples.npy'), test_samples)
-    np.save(str(config.path.processed_datasets / 'training_labels.npy'), training_labels)
-    np.save(str(config.path.processed_datasets / 'test_labels.npy'), test_labels)
+    datasets.training_samples = training_samples
+    datasets.training_labels = training_labels
+    datasets.test_samples = test_samples
+    datasets.test_labels = test_labels

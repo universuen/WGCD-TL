@@ -7,8 +7,6 @@ scripts: Path = project / 'scripts'
 tests: Path = project / 'tests'
 plots: Path = data / 'plots'
 datasets: Path = data / 'datasets'
-raw_datasets: Path = datasets / 'raw'
-processed_datasets: Path = datasets / 'processed'
 models: Path = data / 'models'
 
 for i in list(vars().values()):
