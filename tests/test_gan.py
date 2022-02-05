@@ -10,7 +10,7 @@ from sklearn.manifold import TSNE
 
 import src
 
-TARGET_GAN = src.gans.RSNGAN
+TARGET_GAN = src.gans.WGANGP
 
 if __name__ == '__main__':
     result = dict()
@@ -109,7 +109,7 @@ if __name__ == '__main__':
         src.utils.set_random_state()
         gan = TARGET_GAN()
         gan.fit()
-        z = torch.randn([len(raw_y) - int(2 * sum(raw_y)), 512], device=src.config.device)
+        z = torch.randn([len(raw_y) - int(2 * sum(raw_y)), src.models.z_size], device=src.config.device)
         x = np.concatenate(
             [raw_x, gan.g(z).detach().cpu().numpy()],
         )

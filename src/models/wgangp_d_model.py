@@ -1,24 +1,27 @@
 import torch
 from torch import nn
-from torch.nn.utils.parametrizations import spectral_norm
 
 import src
 
 
-class SNGANDModel(nn.Module):
+class WGANGPDModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.step_1 = nn.Sequential(
-            spectral_norm(nn.Linear(src.models.x_size, 512)),
+            nn.Linear(src.models.x_size, 512),
+            nn.LayerNorm(512),
             nn.LeakyReLU(0.2),
-            spectral_norm(nn.Linear(512, 128)),
+            nn.Linear(512, 128),
+            nn.LayerNorm(128),
             nn.LeakyReLU(0.2),
-            spectral_norm(nn.Linear(128, 32)),
+            nn.Linear(128, 32),
+            nn.LayerNorm(32),
             nn.LeakyReLU(0.2),
-            spectral_norm(nn.Linear(32, 8)),
+            nn.Linear(32, 8),
+            nn.LayerNorm(8),
             nn.LeakyReLU(0.2),
         )
-        self.step_2 = spectral_norm(nn.Linear(8, 1))
+        self.step_2 = nn.Linear(8, 1)
         self.hidden_output = None
 
         self.apply(src.utils.init_weights)

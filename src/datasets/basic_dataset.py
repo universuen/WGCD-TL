@@ -3,6 +3,8 @@ from typing import Callable
 import torch
 from torch.utils.data import Dataset
 
+import src.config
+
 
 class BasicDataset(Dataset):
     def __init__(

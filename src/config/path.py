@@ -5,9 +5,8 @@ project: Path = src.parent
 data: Path = project / 'data'
 scripts: Path = project / 'scripts'
 tests: Path = project / 'tests'
-plots: Path = data / 'plots'
 datasets: Path = data / 'datasets'
-models: Path = data / 'models'
+test_results: Path = data / 'test_results'
 
 for i in list(vars().values()):
     if isinstance(i, Path):

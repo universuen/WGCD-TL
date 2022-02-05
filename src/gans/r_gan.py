@@ -3,14 +3,14 @@ from tqdm import tqdm
 
 import src
 from src import config, models
-from src.models import SNGANGModel, SNGANDModel
+from src.models import GANGModel, GANDModel
 from src.datasets import PositiveDataset, RoulettePositiveDataset
 from ._base import Base
 
 
-class RSNGAN(Base):
+class RGAN(Base):
     def __init__(self):
-        super().__init__(SNGANGModel(), SNGANDModel())
+        super().__init__(GANGModel(), GANDModel())
 
     def _fit(self):
         d_optimizer = torch.optim.Adam(
@@ -29,11 +29,11 @@ class RSNGAN(Base):
             for __ in range(config.gan.d_loops):
                 self.d.zero_grad()
                 prediction_real = self.d(x)
-                loss_real = - prediction_real.mean()
+                loss_real = -torch.log(prediction_real.mean())
                 z = torch.randn(len(x), models.z_size, device=config.device)
                 fake_x = self.g(z).detach()
                 prediction_fake = self.d(fake_x)
-                loss_fake = prediction_fake.mean()
+                loss_fake = -torch.log(1 - prediction_fake.mean())
                 loss = loss_real + loss_fake
                 loss.backward()
                 d_optimizer.step()
@@ -50,6 +50,6 @@ class RSNGAN(Base):
                     real_x_hidden_distribution - fake_x_hidden_distribution,
                     p=2
                 ) * config.gan.hl_lambda
-                loss = -final_output.mean() + hidden_loss
+                loss = -torch.log(final_output.mean()) + hidden_loss
                 loss.backward()
                 g_optimizer.step()

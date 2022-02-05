@@ -5,6 +5,7 @@ from torch.utils.data import Dataset
 from sklearn.metrics import roc_auc_score, confusion_matrix
 from tqdm import tqdm
 
+from src import config
 from src.config.tr_ada_boost import classifiers as n_classifier
 from src.datasets import BasicDataset
 from src.classifier import Classifier
@@ -20,12 +21,14 @@ class TrAdaBoost:
             'AUC': .0,
         }
 
-    def fit(self, src_dataset: Dataset, tgt_dataset: Dataset):
+    def fit(self, src_dataset: BasicDataset, tgt_dataset: BasicDataset):
         final_betas = []
         combined_dataset = BasicDataset()
+        src_dataset.to(config.device)
+        tgt_dataset.to(config.device)
         combined_dataset.samples = torch.cat([src_dataset.samples, tgt_dataset.samples])
         combined_dataset.labels = torch.cat([src_dataset.labels, tgt_dataset.labels])
-        weights = torch.ones(len(combined_dataset))
+        weights = torch.ones(len(combined_dataset), device=config.device)
         n = len(src_dataset)
         m = len(tgt_dataset)
         beta = 1 / (1 + sqrt(2 * log(n) / n_classifier))
@@ -40,8 +43,8 @@ class TrAdaBoost:
             if error_tgt >= 0.5:
                 error_tgt = 0.5 - 1e-3
             beta_t = (error_tgt / (1 - error_tgt))
-            betas = torch.tensor([beta if j < n else beta_t for j in range(n + m)])
-            signs = torch.tensor([1 if j < n else -1 for j in range(n + m)])
+            betas = torch.tensor([beta if j < n else beta_t for j in range(n + m)], device=config.device)
+            signs = torch.tensor([1 if j < n else -1 for j in range(n + m)], device=config.device)
             exponents = torch.cat(
                 [
                     abs(classifier.predict(src_dataset[:][0]) - src_dataset[:][1]),
@@ -53,7 +56,7 @@ class TrAdaBoost:
 
         # remove extra classifiers and coefficients
         self.classifiers = self.classifiers[ceil(n_classifier / 2):n_classifier]
-        self.betas = torch.tensor(final_betas[ceil(n_classifier / 2):n_classifier])
+        self.betas = torch.tensor(final_betas[ceil(n_classifier / 2):n_classifier], device=config.device)
 
     def predict(self, x):
         prediction = torch.stack([i.predict(x) for i in self.classifiers]).T
@@ -61,12 +64,12 @@ class TrAdaBoost:
             1 if i >= 0 else 0 for i in
             torch.prod(self.betas ** -prediction, dim=1) - torch.prod(self.betas ** -0.5)
         ]
-        return torch.tensor(result)
+        return torch.tensor(result, device=config.device)
 
-    def test(self, test_dataset: Dataset):
+    def test(self, test_dataset: BasicDataset):
         with torch.no_grad():
-            x, label = test_dataset[:]
-            predicted_label = self.predict(x)
+            x, label = test_dataset.samples.cpu(), test_dataset.labels.cpu()
+            predicted_label = self.predict(x).cpu()
             tn, fp, fn, tp = confusion_matrix(
                 y_true=label,
                 y_pred=predicted_label,

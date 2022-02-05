@@ -4,10 +4,10 @@ import torch
 import numpy as np
 import pandas as pd
 from torch import nn
+from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split
 
 import src
-from src import config, datasets, models
 
 
 def init_weights(layer: nn.Module):
@@ -23,7 +23,7 @@ def init_weights(layer: nn.Module):
 
 def set_random_state(seed: int = None) -> None:
     if seed is None:
-        seed = config.seed
+        seed = src.config.seed
 
     random.seed(seed)
     np.random.seed(seed)
@@ -36,7 +36,7 @@ def set_random_state(seed: int = None) -> None:
 def preprocess_data(file_name: str) -> (np.ndarray, np.ndarray):
     set_random_state()
     # concatenate the file path
-    file_path = config.path.datasets / file_name
+    file_path = src.config.path.datasets / file_name
     # calculate skip rows
     skip_rows = 0
     with open(file_path, 'r') as f:
@@ -60,8 +60,8 @@ def preprocess_data(file_name: str) -> (np.ndarray, np.ndarray):
     labels[labels[:] == 'negative'] = 0
     labels = labels.astype('int')
     # normalize samples
-    samples = normalize(samples.astype('float32'))
-    models.x_size = samples.shape[1]
+    samples = minmax_scale(samples.astype('float32'))
+    src.models.x_size = samples.shape[1]
     return samples, labels
 
 
@@ -71,12 +71,12 @@ def prepare_dataset(name: str, training_test_ratio: float = 0.8) -> None:
         samples,
         labels,
         train_size=training_test_ratio,
-        random_state=config.seed,
+        random_state=src.config.seed,
     )
-    datasets.training_samples = training_samples
-    datasets.training_labels = training_labels
-    datasets.test_samples = test_samples
-    datasets.test_labels = test_labels
+    src.datasets.training_samples = training_samples
+    src.datasets.training_labels = training_labels
+    src.datasets.test_samples = test_samples
+    src.datasets.test_labels = test_labels
 
 
 def get_final_test_metrics(statistics: dict) -> dict:
@@ -100,10 +100,9 @@ def get_knn_indices(sample: torch.Tensor, all_samples: torch.Tensor, k: int = 5)
     return torch.topk(dist, k, largest=False).indices
 
 
-def get_rgan_dataset() -> datasets.FullDataset:
+def get_rgan_dataset(rgan: src.gans.GANLike) -> src.datasets.FullDataset:
     vae = src.vae.VAE()
     vae.fit()
-    rgan = src.gans.RSNGAN()
     rgan.fit()
 
     full_dataset = src.datasets.FullDataset().to(src.config.device)
@@ -156,4 +155,6 @@ def get_rgan_dataset() -> datasets.FullDataset:
             labels = full_dataset.labels[indices]
             if 0 in labels:
                 ol_pos_cnt += 1
+    target_dataset.samples = target_dataset.samples.detach()
+    target_dataset.labels = target_dataset.labels.detach()
     return target_dataset

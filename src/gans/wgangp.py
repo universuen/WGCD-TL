@@ -1,16 +1,15 @@
 import torch
 from tqdm import tqdm
 
-import src
 from src import config, models
-from src.models import SNGANGModel, SNGANDModel
-from src.datasets import PositiveDataset, RoulettePositiveDataset
+from src.models import WGANGPGModel, WGANGPDModel
+from src.datasets import PositiveDataset
 from ._base import Base
 
 
-class RSNGAN(Base):
+class WGANGP(Base):
     def __init__(self):
-        super().__init__(SNGANGModel(), SNGANDModel())
+        super().__init__(WGANGPGModel(), WGANGPDModel())
 
     def _fit(self):
         d_optimizer = torch.optim.Adam(
@@ -24,7 +23,7 @@ class RSNGAN(Base):
             betas=(0.5, 0.999),
         )
 
-        x = RoulettePositiveDataset().get_roulette_samples(len(PositiveDataset())).to(config.device)
+        x = PositiveDataset()[:][0].to(config.device)
         for _ in tqdm(range(config.gan.epochs)):
             for __ in range(config.gan.d_loops):
                 self.d.zero_grad()
@@ -34,22 +33,35 @@ class RSNGAN(Base):
                 fake_x = self.g(z).detach()
                 prediction_fake = self.d(fake_x)
                 loss_fake = prediction_fake.mean()
-                loss = loss_real + loss_fake
+                gradient_penalty = self._cal_gradient_penalty(x, fake_x)
+                loss = loss_real + loss_fake + gradient_penalty
                 loss.backward()
                 d_optimizer.step()
             for __ in range(config.gan.g_loops):
                 self.g.zero_grad()
-                real_x_hidden_output = self.d.hidden_output.detach()
                 z = torch.randn(len(x), models.z_size, device=config.device)
                 fake_x = self.g(z)
-                final_output = self.d(fake_x)
-                fake_x_hidden_output = self.d.hidden_output
-                real_x_hidden_distribution = src.utils.normalize(real_x_hidden_output)
-                fake_x_hidden_distribution = src.utils.normalize(fake_x_hidden_output)
-                hidden_loss = torch.norm(
-                    real_x_hidden_distribution - fake_x_hidden_distribution,
-                    p=2
-                ) * config.gan.hl_lambda
-                loss = -final_output.mean() + hidden_loss
+                prediction = self.d(fake_x)
+                loss = - prediction.mean()
                 loss.backward()
                 g_optimizer.step()
+
+    def _cal_gradient_penalty(
+            self,
+            x: torch.Tensor,
+            fake_x: torch.Tensor,
+    ) -> torch.Tensor:
+        alpha = torch.rand(len(x), 1).to(config.device)
+        interpolates = alpha * x + (1 - alpha) * fake_x
+        interpolates.requires_grad = True
+        disc_interpolates = self.d(interpolates)
+        gradients = torch.autograd.grad(
+            outputs=disc_interpolates,
+            inputs=interpolates,
+            grad_outputs=torch.ones(disc_interpolates.size()).to(config.device),
+            create_graph=True,
+            retain_graph=True,
+            only_inputs=True,
+        )[0]
+        gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * config.gan.wgangp_lambda
+        return gradient_penalty

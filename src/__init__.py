@@ -1,10 +1,11 @@
 from . import (
     config,
-    classifier,
     datasets,
     gans,
-    utils,
+    models,
+    classifier,
     logger,
     tr_ada_boost,
+    utils,
     vae,
 )

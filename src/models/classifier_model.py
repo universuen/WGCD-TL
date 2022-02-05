@@ -1,15 +1,14 @@
 import torch
 from torch import nn
 
-from src import models
-from src.utils import init_weights
+import src
 
 
 class ClassifierModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.process = nn.Sequential(
-            nn.Linear(models.x_size, 32),
+            nn.Linear(src.models.x_size, 32),
             nn.LeakyReLU(0.2),
             nn.Linear(32, 128),
             nn.LeakyReLU(0.2),
@@ -23,7 +22,7 @@ class ClassifierModel(nn.Module):
             nn.Sigmoid(),
         )
 
-        self.apply(init_weights)
+        self.apply(src.utils.init_weights)
 
     def forward(self, x: torch.Tensor):
         return self.process(x)

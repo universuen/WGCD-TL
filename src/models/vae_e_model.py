@@ -1,32 +1,31 @@
 import torch
 from torch import nn
 
-from src import config, models
-from src.utils import init_weights
+import src
 
 
 class VAEEModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.calculate_mu = nn.Sequential(
-            nn.Linear(models.x_size, 32, bias=False),
+            nn.Linear(src.models.x_size, 32, bias=False),
             nn.BatchNorm1d(32),
             nn.LeakyReLU(),
             nn.Linear(32, 128, bias=False),
             nn.BatchNorm1d(128),
             nn.LeakyReLU(),
-            nn.Linear(128, config.vae.z_size),
+            nn.Linear(128, src.models.z_size),
         )
         self.calculate_log_variance = nn.Sequential(
-            nn.Linear(models.x_size, 32, bias=False),
+            nn.Linear(src.models.x_size, 32, bias=False),
             nn.BatchNorm1d(32),
             nn.LeakyReLU(),
             nn.Linear(32, 128, bias=False),
             nn.BatchNorm1d(128),
             nn.LeakyReLU(),
-            nn.Linear(128, config.vae.z_size),
+            nn.Linear(128, src.models.z_size),
         )
-        self.apply(init_weights)
+        self.apply(src.utils.init_weights)
 
     def forward(self, x: torch.Tensor):
         mu = self.calculate_mu(x)

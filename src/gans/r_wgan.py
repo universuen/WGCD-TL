@@ -3,25 +3,23 @@ from tqdm import tqdm
 
 import src
 from src import config, models
-from src.models import SNGANGModel, SNGANDModel
+from src.models import WGANGModel, WGANDModel
 from src.datasets import PositiveDataset, RoulettePositiveDataset
 from ._base import Base
 
 
-class RSNGAN(Base):
+class RWGAN(Base):
     def __init__(self):
-        super().__init__(SNGANGModel(), SNGANDModel())
+        super().__init__(WGANGModel(), WGANDModel())
 
     def _fit(self):
-        d_optimizer = torch.optim.Adam(
+        d_optimizer = torch.optim.RMSprop(
             params=self.d.parameters(),
-            lr=config.gan.d_lr,
-            betas=(0.5, 0.999),
+            lr=config.gan.d_lr
         )
-        g_optimizer = torch.optim.Adam(
+        g_optimizer = torch.optim.RMSprop(
             params=self.g.parameters(),
             lr=config.gan.g_lr,
-            betas=(0.5, 0.999),
         )
 
         x = RoulettePositiveDataset().get_roulette_samples(len(PositiveDataset())).to(config.device)
@@ -37,6 +35,8 @@ class RSNGAN(Base):
                 loss = loss_real + loss_fake
                 loss.backward()
                 d_optimizer.step()
+                for p in self.d.parameters():
+                    p.data.clamp_(*config.gan.wgan_clamp)
             for __ in range(config.gan.g_loops):
                 self.g.zero_grad()
                 real_x_hidden_output = self.d.hidden_output.detach()

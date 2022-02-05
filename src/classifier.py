@@ -3,11 +3,11 @@ from math import sqrt
 import torch
 import numpy as np
 from torch.nn.functional import binary_cross_entropy
-from torch.utils.data import Dataset
 from torch.optim import Adam
 from sklearn.metrics import roc_auc_score, confusion_matrix
 
 from src import config, logger, models
+from src.datasets import BasicDataset
 
 
 class Classifier:
@@ -21,7 +21,7 @@ class Classifier:
             'AUC': .0,
         }
 
-    def fit(self, dataset: Dataset, weights: torch.Tensor = None):
+    def fit(self, dataset: BasicDataset, weights: torch.Tensor = None):
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
 
@@ -32,11 +32,9 @@ class Classifier:
             betas=(0.5, 0.9),
         )
 
-        x, label = dataset[:]
+        x, label = dataset.samples.to(config.device), dataset.labels.to(config.device)
         for _ in range(config.classifier.epochs):
             self.model.zero_grad()
-            x = x.to(config.device)
-            label = label.to(config.device)
             prediction = self.model(x).squeeze()
             loss = binary_cross_entropy(
                 input=prediction,
@@ -54,10 +52,10 @@ class Classifier:
         prob = self.model(x)
         return self._prob2label(prob)
 
-    def test(self, test_dataset: Dataset):
+    def test(self, test_dataset: BasicDataset):
         with torch.no_grad():
-            x, label = test_dataset[:]
-            predicted_label = self.predict(x)
+            x, label = test_dataset.samples.cpu(), test_dataset.labels.cpu()
+            predicted_label = self.predict(x).cpu()
             tn, fp, fn, tp = confusion_matrix(
                 y_true=label,
                 y_pred=predicted_label,
@@ -86,4 +84,4 @@ class Classifier:
         for i, p in enumerate(probabilities):
             if p >= 0.5:
                 labels[i] = 1
-        return torch.from_numpy(labels)
+        return torch.from_numpy(labels).to(config.device)

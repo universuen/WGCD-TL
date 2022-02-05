@@ -1,2 +1,2 @@
-classifiers: int = 4
+classifiers: int = 10
 
