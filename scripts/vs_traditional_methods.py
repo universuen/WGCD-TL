@@ -105,11 +105,6 @@ METRICS = [
 ]
 
 if __name__ == '__main__':
-    src.config.classifier.epochs = 10
-    src.config.gan.epochs = 10
-    src.config.tr_ada_boost = 10
-    src.config.vae.epochs = 10
-
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', None)
