@@ -1,5 +1,4 @@
 import torch
-from tqdm import tqdm
 
 from src import config, models
 from src.models import GANGModel, GANDModel
@@ -24,7 +23,7 @@ class GAN(Base):
         )
 
         x = PositiveDataset()[:][0].to(config.device)
-        for _ in tqdm(range(config.gan.epochs)):
+        for _ in range(config.gan.epochs):
             for __ in range(config.gan.d_loops):
                 self.d.zero_grad()
                 prediction_real = self.d(x)

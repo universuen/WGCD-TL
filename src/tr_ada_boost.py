@@ -1,9 +1,7 @@
 from math import sqrt, log, ceil
 
 import torch
-from torch.utils.data import Dataset
 from sklearn.metrics import roc_auc_score, confusion_matrix
-from tqdm import tqdm
 
 from src import config
 from src.config.tr_ada_boost import classifiers as n_classifier
@@ -32,7 +30,7 @@ class TrAdaBoost:
         n = len(src_dataset)
         m = len(tgt_dataset)
         beta = 1 / (1 + sqrt(2 * log(n) / n_classifier))
-        for i in tqdm(range(n_classifier)):
+        for i in range(n_classifier):
             p = weights / sum(weights)
             classifier = self.classifiers[i]
             classifier.logger.setLevel('FATAL')

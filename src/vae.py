@@ -2,7 +2,6 @@ import random
 
 import torch
 from torch.nn.functional import mse_loss
-from tqdm import tqdm
 
 from src import config
 from src.datasets import PositiveDataset
@@ -30,7 +29,7 @@ class VAE:
         )
 
         x = PositiveDataset()[:][0].to(config.device)
-        for _ in tqdm(range(config.vae.epochs)):
+        for _ in range(config.vae.epochs):
             # clear gradients
             self.e.zero_grad()
             self.d.zero_grad()

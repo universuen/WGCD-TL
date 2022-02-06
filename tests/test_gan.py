@@ -10,7 +10,7 @@ from sklearn.manifold import TSNE
 
 import src
 
-TARGET_GAN = src.gans.WGANGP
+TARGET_GAN = src.gans.GAN
 
 if __name__ == '__main__':
     result = dict()
