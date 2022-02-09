@@ -105,6 +105,7 @@ METRICS = [
 ]
 
 if __name__ == '__main__':
+    src.config.logger.level = 'WARNING'
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', None)
@@ -140,11 +141,11 @@ if __name__ == '__main__':
             src.utils.set_random_state()
             training_dataset = src.datasets.FullDataset(training=True)
             test_dataset = src.datasets.FullDataset(training=False)
-            classifier = src.classifier.Classifier('Original')
-            classifier.fit(training_dataset)
-            classifier.test(test_dataset)
+            o_classifier = src.classifier.Classifier('Original')
+            o_classifier.fit(training_dataset)
+            o_classifier.test(test_dataset)
             for metric_name in METRICS:
-                temp_result[metric_name]['Original'].append(classifier.metrics[metric_name])
+                temp_result[metric_name]['Original'].append(o_classifier.metrics[metric_name])
             # test traditional methods
             for METHOD in TRADITIONAL_METHODS:
                 try:
@@ -156,11 +157,11 @@ if __name__ == '__main__':
                     balanced_dataset.samples = torch.from_numpy(x)
                     balanced_dataset.labels = torch.from_numpy(y)
                     src.utils.set_random_state()
-                    classifier = src.classifier.Classifier(METHOD.__name__)
-                    classifier.fit(balanced_dataset)
-                    classifier.test(test_dataset)
+                    tm_classifier = src.classifier.Classifier(METHOD.__name__)
+                    tm_classifier.fit(balanced_dataset)
+                    tm_classifier.test(test_dataset)
                     for metric_name in METRICS:
-                        temp_result[metric_name][METHOD.__name__].append(classifier.metrics[metric_name])
+                        temp_result[metric_name][METHOD.__name__].append(tm_classifier.metrics[metric_name])
                 except (RuntimeError, ValueError):
                     for metric_name in METRICS:
                         temp_result[metric_name][METHOD.__name__].append(0)
@@ -169,9 +170,11 @@ if __name__ == '__main__':
             rgan_dataset = src.utils.get_rgan_dataset(RGAN())
             esb_classifier = src.tr_ada_boost.TrAdaBoost()
             esb_classifier.fit(rgan_dataset, training_dataset)
+            # esb_classifier = src.classifier.Classifier('RGAN-TL')
+            # esb_classifier.fit(rgan_dataset)
             esb_classifier.test(test_dataset)
             for metric_name in METRICS:
-                temp_result[metric_name]['RGAN-TL'].append(classifier.metrics[metric_name])
+                temp_result[metric_name]['RGAN-TL'].append(esb_classifier.metrics[metric_name])
         # calculate final metrics
         for method_name in all_methods:
             for metric_name in METRICS:

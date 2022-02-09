@@ -2,7 +2,7 @@ from src.tr_ada_boost import TrAdaBoost
 from src import datasets, utils
 
 
-FILE_MANE = 'pima.dat'
+FILE_MANE = 'wisconsin.dat'
 
 
 if __name__ == '__main__':
