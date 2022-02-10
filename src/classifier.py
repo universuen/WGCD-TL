@@ -5,7 +5,7 @@ import numpy as np
 from torch.nn.functional import binary_cross_entropy
 from torch.optim import Adam
 from sklearn.metrics import roc_auc_score, confusion_matrix
-from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 
 from src import config, logger, models
 from src.datasets import BasicDataset
@@ -14,7 +14,7 @@ from src.datasets import BasicDataset
 class Classifier:
     def __init__(self, name: str):
         self.name = name
-        self.model = SVC()
+        self.model = DecisionTreeClassifier(max_depth=5)
         self.logger = logger.Logger(name)
         self.metrics = {
             'F1': .0,

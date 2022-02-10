@@ -3,7 +3,7 @@ from math import sqrt, log, ceil
 import torch
 import numpy as np
 from sklearn.metrics import roc_auc_score, confusion_matrix
-from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 from adapt.instance_based import TrAdaBoost as Base
 
 import src.config.tr_ada_boost
@@ -21,7 +21,7 @@ class TrAdaBoost:
             'AUC': .0,
         }
         self.model = Base(
-            estimator=SVC(probability=True),
+            estimator=DecisionTreeClassifier(max_depth=5),
             n_estimators=src.config.tr_ada_boost.classifiers,
             random_state=src.config.seed,
         )
