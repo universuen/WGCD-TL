@@ -100,6 +100,41 @@ def get_knn_indices(sample: torch.Tensor, all_samples: torch.Tensor, k: int = 5)
     return torch.topk(dist, k, largest=False).indices
 
 
+def get_gan_dataset(gan: src.gans.GANLike) -> src.datasets.FullDataset:
+
+    gan.fit()
+
+    full_dataset = src.datasets.FullDataset().to(src.config.device)
+    pos_dataset = src.datasets.PositiveDataset().to(src.config.device)
+    neg_dataset = src.datasets.NegativeDataset().to(src.config.device)
+    target_dataset = src.datasets.FullDataset().to(src.config.device)
+    # generate positive samples until reaching balance
+    total_pos_cnt = len(pos_dataset)
+    total_neg_cnt = len(neg_dataset)
+
+    target_sample_num = total_neg_cnt - total_pos_cnt
+    if target_sample_num <= 0:
+        return full_dataset
+    z = torch.rand(target_sample_num, src.models.z_size, device=src.config.device)
+    new_samples = gan.generate_samples(z)
+    new_labels = torch.ones(target_sample_num, device=src.config.device)
+    target_dataset.samples = torch.cat(
+        [
+            target_dataset.samples,
+            new_samples,
+        ],
+    )
+    target_dataset.labels = torch.cat(
+        [
+            target_dataset.labels,
+            new_labels,
+        ]
+    )
+    target_dataset.samples = target_dataset.samples.detach()
+    target_dataset.labels = target_dataset.labels.detach()
+    return target_dataset
+
+
 def get_rgan_dataset(rgan: src.gans.GANLike) -> src.datasets.FullDataset:
     vae = src.vae.VAE()
     vae.fit()

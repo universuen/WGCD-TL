@@ -1,3 +1,5 @@
+import os
+
 import torch
 import pandas as pd
 import numpy as np
@@ -6,6 +8,9 @@ from tqdm import tqdm
 from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, BorderlineSMOTE
 
 import src
+from datasets import DATASETS
+
+TEST_NAME = 'test_excel_writer'
 
 TRADITIONAL_METHODS = [
     RandomOverSampler,
@@ -18,86 +23,6 @@ RGAN = src.gans.RSNGAN
 
 K = 5
 
-DATASETS = [
-    'dermatology-6.dat',
-    'ecoli-0-1-3-7_vs_2-6.dat',
-    'ecoli-0-1-4-6_vs_5.dat',
-    'ecoli-0-1-4-7_vs_2-3-5-6.dat',
-    'ecoli-0-1-4-7_vs_5-6.dat',
-    'ecoli-0-1_vs_2-3-5.dat',
-    'ecoli-0-1_vs_5.dat',
-    'ecoli-0-2-3-4_vs_5.dat',
-    'ecoli-0-2-6-7_vs_3-5.dat',
-    'ecoli-0-3-4-6_vs_5.dat',
-    'ecoli-0-3-4-7_vs_5-6.dat',
-    'ecoli-0-3-4_vs_5.dat',
-    'ecoli-0-4-6_vs_5.dat',
-    'ecoli-0-6-7_vs_3-5.dat',
-    'ecoli-0-6-7_vs_5.dat',
-    'ecoli-0_vs_1.dat',
-    'ecoli1.dat',
-    'ecoli2.dat',
-    'ecoli3.dat',
-    'ecoli4.dat',
-    'glass-0-1-2-3_vs_4-5-6.dat',
-    'glass-0-1-4-6_vs_2.dat',
-    'glass-0-1-5_vs_2.dat',
-    'glass-0-1-6_vs_2.dat',
-    'glass-0-1-6_vs_5.dat',
-    'glass-0-4_vs_5.dat',
-    'glass-0-6_vs_5.dat',
-    'glass0.dat',
-    'glass1.dat',
-    'glass2.dat',
-    'glass4.dat',
-    'glass5.dat',
-    'glass6.dat',
-    'haberman.dat',
-    'iris0.dat',
-    'led7digit-0-2-4-5-6-7-8-9_vs_1.dat',
-    'new-thyroid1.dat',
-    'newthyroid2.dat',
-    'page-blocks-1-3_vs_4.dat',
-    'page-blocks0.dat',
-    'pima.dat',
-    'poker-8-9_vs_5.dat',
-    'poker-8-9_vs_6.dat',
-    'poker-8_vs_6.dat',
-    'poker-9_vs_7.dat',
-    'segment0.dat',
-    'shuttle-2_vs_5.dat',
-    'shuttle-6_vs_2-3.dat',
-    'shuttle-c0-vs-c4.dat',
-    'shuttle-c2-vs-c4.dat',
-    'vehicle0.dat',
-    'vehicle1.dat',
-    'vehicle2.dat',
-    'vehicle3.dat',
-    'vowel0.dat',
-    'winequality-red-3_vs_5.dat',
-    'winequality-red-4.dat',
-    'winequality-red-8_vs_6-7.dat',
-    'winequality-red-8_vs_6.dat',
-    'winequality-white-3-9_vs_5.dat',
-    'winequality-white-3_vs_7.dat',
-    'winequality-white-9_vs_4.dat',
-    'wisconsin.dat',
-    'yeast-0-2-5-6_vs_3-7-8-9.dat',
-    'yeast-0-2-5-7-9_vs_3-6-8.dat',
-    'yeast-0-3-5-9_vs_7-8.dat',
-    'yeast-0-5-6-7-9_vs_4.dat',
-    'yeast-1-2-8-9_vs_7.dat',
-    'yeast-1-4-5-8_vs_7.dat',
-    'yeast-1_vs_7.dat',
-    'yeast-2_vs_4.dat',
-    'yeast-2_vs_8.dat',
-    'yeast1.dat',
-    'yeast3.dat',
-    'yeast4.dat',
-    'yeast5.dat',
-    'yeast6.dat',
-]
-
 METRICS = [
     'F1',
     'AUC',
@@ -106,16 +31,16 @@ METRICS = [
 
 if __name__ == '__main__':
     src.config.logger.level = 'WARNING'
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.width', None)
+    result_file = src.config.path.test_results / f'vstm_{TEST_NAME}.xlsx'
+    if os.path.exists(result_file):
+        input(f'{result_file} already existed, continue?')
     all_methods = ['Original', *[i.__name__ for i in TRADITIONAL_METHODS], 'RGAN-TL']
     result = {
         k: pd.DataFrame(
             {
                 kk:
                     {
-                        kkk: 0.0 for kkk in DATASETS
+                        kkk: 0.0 for kkk in [*DATASETS, 'mean']
                     } for kk in all_methods
             }
         ) for k in METRICS
@@ -137,10 +62,10 @@ if __name__ == '__main__':
             src.datasets.training_labels = labels[training_indices]
             src.datasets.test_samples = samples[test_indices]
             src.datasets.test_labels = labels[test_indices]
-            # test original classifier
-            src.utils.set_random_state()
             training_dataset = src.datasets.FullDataset(training=True)
             test_dataset = src.datasets.FullDataset(training=False)
+            # test original classifier
+            src.utils.set_random_state()
             o_classifier = src.classifier.Classifier('Original')
             o_classifier.fit(training_dataset)
             o_classifier.test(test_dataset)
@@ -179,10 +104,13 @@ if __name__ == '__main__':
         for method_name in all_methods:
             for metric_name in METRICS:
                 result[metric_name][method_name][dataset_name] = np.mean(temp_result[metric_name][method_name])
+        # calculate average metrics on all datasets
+        for gan_name in all_methods:
+            for metric_name in METRICS:
+                result[metric_name][gan_name]['mean'] = np.mean([i for i in result[metric_name][gan_name].values])
         # write down current result
-        for metric_name in METRICS:
-            result[metric_name].to_excel(
-                src.config.path.test_results / f'vs_tm_{metric_name}.xlsx',
-                float_format='%.4f'
-            )
-
+        with pd.ExcelWriter(result_file) as writer:
+            for metric_name in METRICS:
+                df = result[metric_name]
+                df.to_excel(writer, metric_name)
+                df.style.highlight_max(axis=1).to_excel(writer, metric_name, float_format='%.4f')

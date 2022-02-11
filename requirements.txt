@@ -9,3 +9,4 @@ matplotlib~=3.5.1
 imblearn~=0.0
 openpyxl~=3.0.9
 adapt~=0.3.0
+Jinja2~=3.0.3
