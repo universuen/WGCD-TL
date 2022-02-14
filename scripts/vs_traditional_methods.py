@@ -10,7 +10,7 @@ from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, BorderlineS
 import src
 from datasets import DATASETS
 
-TEST_NAME = 'test_excel_writer'
+TEST_NAME = '2-14'
 
 TRADITIONAL_METHODS = [
     RandomOverSampler,
