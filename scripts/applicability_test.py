@@ -6,6 +6,7 @@ from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
 import src
+from scripts.datasets import DATASETS
 
 TEST_NAME = '2-11'
 
@@ -22,47 +23,6 @@ METRICS = [
     'F1',
     'AUC',
     'G-Mean',
-]
-
-DATASETS = [
-    'ecoli-0-1-4-7_vs_5-6.dat',
-    'ecoli-0-1_vs_5.dat',
-    'ecoli-0-6-7_vs_3-5.dat',
-    'ecoli3.dat',
-    'ecoli4.dat',
-    'glass-0-1-4-6_vs_2.dat',
-    'glass-0-1-5_vs_2.dat',
-    'glass-0-1-6_vs_2.dat',
-    'glass-0-1-6_vs_5.dat',
-    'glass-0-4_vs_5.dat',
-    'glass-0-6_vs_5.dat',
-    'glass0.dat',
-    'glass1.dat',
-    'glass2.dat',
-    'glass4.dat',
-    'glass5.dat',
-    'newthyroid2.dat',
-    'page-blocks-1-3_vs_4.dat',
-    'poker-8-9_vs_5.dat',
-    'poker-8-9_vs_6.dat',
-    'poker-8_vs_6.dat',
-    'poker-9_vs_7.dat',
-    'segment0.dat',
-    'shuttle-2_vs_5.dat',
-    'shuttle-c2-vs-c4.dat',
-    'vehicle0.dat',
-    'vehicle1.dat',
-    'vehicle2.dat',
-    'vehicle3.dat',
-    'winequality-red-4.dat',
-    'winequality-red-8_vs_6-7.dat',
-    'winequality-red-8_vs_6.dat',
-    'winequality-white-3-9_vs_5.dat',
-    'wisconsin.dat',
-    'yeast-0-5-6-7-9_vs_4.dat',
-    'yeast-1-4-5-8_vs_7.dat',
-    'yeast-2_vs_8.dat',
-    'yeast6.dat',
 ]
 
 

@@ -11,3 +11,4 @@ test_results: Path = data / 'test_results'
 for i in list(vars().values()):
     if isinstance(i, Path):
         i.mkdir(parents=True, exist_ok=True)
+

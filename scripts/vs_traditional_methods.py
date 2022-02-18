@@ -8,7 +8,7 @@ from tqdm import tqdm
 from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, BorderlineSMOTE
 
 import src
-from datasets import DATASETS
+from scripts.datasets import DATASETS
 
 TEST_NAME = '2-14'
 
@@ -28,6 +28,7 @@ METRICS = [
     'AUC',
     'G-Mean',
 ]
+
 
 if __name__ == '__main__':
     src.config.logger.level = 'WARNING'
@@ -93,10 +94,8 @@ if __name__ == '__main__':
             # test RGAN-TL
             src.utils.set_random_state()
             rgan_dataset = src.utils.get_rgan_dataset(RGAN())
-            # esb_classifier = src.tr_ada_boost.TrAdaBoost()
-            # esb_classifier.fit(rgan_dataset, training_dataset)
-            esb_classifier = src.classifier.Classifier('RGAN-TL')
-            esb_classifier.fit(rgan_dataset)
+            esb_classifier = src.tr_ada_boost.TrAdaBoost()
+            esb_classifier.fit(rgan_dataset, training_dataset)
             esb_classifier.test(test_dataset)
             for metric_name in METRICS:
                 temp_result[metric_name]['RGAN-TL'].append(esb_classifier.metrics[metric_name])

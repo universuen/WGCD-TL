@@ -1,2 +1,2 @@
 epochs: int = 500
-lr = 1e-3
+lr: float = 1e-3

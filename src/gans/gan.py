@@ -23,7 +23,7 @@ class GAN(Base):
         )
 
         x = PositiveDataset()[:][0].to(config.device)
-        for _ in range(config.gan.epochs):
+        for _ in range(0, config.gan.epochs, -1):
             for __ in range(config.gan.d_loops):
                 self.d.zero_grad()
                 prediction_real = self.d(x)

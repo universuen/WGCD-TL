@@ -7,8 +7,9 @@ from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
 import src
+from scripts.datasets import DATASETS
 
-TEST_NAME = 'test_script'
+TEST_NAME = '2-15'
 
 K = 5
 
@@ -18,11 +19,6 @@ METRICS = [
     'G-Mean',
 ]
 
-DATASETS = [
-    'ecoli-0-1-4-7_vs_5-6.dat',
-    'ecoli-0-1_vs_5.dat',
-    'ecoli-0-6-7_vs_3-5.dat',
-]
 
 def highlight_legal_cells(s: pd.Series) -> list[str]:
     result_ = []
@@ -35,7 +31,7 @@ def highlight_legal_cells(s: pd.Series) -> list[str]:
             result_.append('background-color: yellow')
         else:
             result_.append('')
-    if s[-1] > max(s):
+    if s[-1] >= max(s):
         result_.append('background-color: yellow')
     else:
         result_.append('')

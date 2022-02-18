@@ -2,9 +2,10 @@ import context
 
 from src import utils, datasets
 
+FILE_NAME = 'pima.dat'
 
 if __name__ == '__main__':
-    utils.prepare_dataset()
+    utils.prepare_dataset(FILE_NAME)
     # build and test datasets
     full_dataset = datasets.FullDataset()
 
