@@ -45,18 +45,18 @@ class SNGANSM(src.gans.SNGAN):
     def _fit(self):
         d_optimizer = torch.optim.Adam(
             params=self.d.parameters(),
-            lr=src.config.gan.d_lr,
+            lr=src.config.gan_config.d_lr,
             betas=(0.5, 0.999),
         )
         g_optimizer = torch.optim.Adam(
             params=self.g.parameters(),
-            lr=src.config.gan.g_lr,
+            lr=src.config.gan_config.g_lr,
             betas=(0.5, 0.999),
         )
 
         x = src.datasets.PositiveDataset()[:][0].to(src.config.device)
-        for _ in range(src.config.gan.epochs):
-            for __ in range(src.config.gan.d_loops):
+        for _ in range(src.config.gan_config.epochs):
+            for __ in range(src.config.gan_config.d_loops):
                 self.d.zero_grad()
                 prediction_real = self.d(x)
                 loss_real = -torch.log(prediction_real.mean())
@@ -67,7 +67,7 @@ class SNGANSM(src.gans.SNGAN):
                 loss = loss_real + loss_fake
                 loss.backward()
                 d_optimizer.step()
-            for __ in range(src.config.gan.g_loops):
+            for __ in range(src.config.gan_config.g_loops):
                 self.g.zero_grad()
                 real_x_hidden_output = self.d.hidden_output.detach()
                 z = torch.randn(len(x), src.models.z_size, device=src.config.device)
@@ -79,15 +79,15 @@ class SNGANSM(src.gans.SNGAN):
                 hidden_loss = torch.norm(
                     real_x_hidden_distribution - fake_x_hidden_distribution,
                     p=2
-                ) * src.config.gan.hl_lambda
+                ) * src.config.gan_config.hl_lambda
                 loss = -torch.log(final_output.mean()) + hidden_loss
                 loss.backward()
                 g_optimizer.step()
 
 
 if __name__ == '__main__':
-    src.config.logger.level = 'WARNING'
-    result_file = src.config.path.test_results / f'ablation_{TEST_NAME}.xlsx'
+    src.config.logging_config.level = 'WARNING'
+    result_file = src.config.path_config.test_results / f'ablation_{TEST_NAME}.xlsx'
     if os.path.exists(result_file):
         input(f'{result_file} already existed, continue?')
     methods = [
@@ -177,11 +177,11 @@ if __name__ == '__main__':
                     classifier = src.classifier.Classifier('SNGAN-SM')
                     classifier.fit(gan_sm_dataset)
                 elif method_name == 'SNGAN-R':
-                    former_hl_lambda = src.config.gan.hl_lambda
-                    src.config.gan.hl_lambda = 0
+                    former_hl_lambda = src.config.gan_config.hl_lambda
+                    src.config.gan_config.hl_lambda = 0
                     rgan = src.gans.RSNGAN()
                     rgan.fit()
-                    src.config.gan.hl_lambda = former_hl_lambda
+                    src.config.gan_config.hl_lambda = former_hl_lambda
                     rgan_dataset = src.utils.get_gan_dataset(rgan)
                     classifier = src.classifier.Classifier('SNGAN-R')
                     classifier.fit(rgan_dataset)

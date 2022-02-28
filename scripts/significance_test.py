@@ -14,7 +14,7 @@ METHODS = [
     'SMOTE',
     'ADASYN',
     'BorderlineSMOTE',
-    'RGAN-TL',
+    'RVGAN-TL',
 ]
 
 METRICS = [
@@ -28,7 +28,7 @@ def cal_cd(n, k, q):
     return q * (np.sqrt(k * (k + 1) / (6 * n)))
 
 
-excel_path = src.config.path.test_results / 'vstm_final.xlsx'
+excel_path = src.config.path_config.test_results / 'vstm_final.xlsx'
 
 df = pd.read_excel(excel_path, index_col=0, sheet_name=None)
 

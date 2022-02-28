@@ -3,13 +3,10 @@ from typing import Callable
 import torch
 from torch.utils.data import Dataset
 
-import src.config
 
-
-class BasicDataset(Dataset):
+class DatasetLike(Dataset):
     def __init__(
             self,
-            training: bool = True,
             transform: Callable = None,
             target_transform: Callable = None,
     ):

@@ -1,11 +1,6 @@
-from .gan import GAN
-from .wgan import WGAN
-from .wgangp import WGANGP
-from .sngan import SNGAN
+from src.gans.gan_like import GANLike
 
-from .r_gan import RGAN
-from .r_wgan import RWGAN
-from .r_wgangp import RWGANGP
-from .r_sngan import RSNGAN
-
-from ._base import Base as GANLike
+from src.gans.gan import GAN
+from src.gans.wgan import WGAN
+from src.gans.wgangp import WGANGP
+from src.gans.sngan import SNGAN

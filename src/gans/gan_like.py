@@ -1,17 +1,17 @@
 from abc import abstractmethod
 
 import torch
-from torch.nn import Module
 
 from src import config
 from src.logger import Logger
+from src.models.model_like import ModelLike
 
 
-class Base:
+class GANLike:
     def __init__(
             self,
-            g: Module,
-            d: Module,
+            g: ModelLike,
+            d: ModelLike,
     ):
         self.logger = Logger(self.__class__.__name__)
         self.g = g.to(config.device)

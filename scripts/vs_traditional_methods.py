@@ -19,7 +19,7 @@ TRADITIONAL_METHODS = [
     BorderlineSMOTE,
 ]
 
-RGAN = src.gans.RSNGAN
+RGAN = src.gans.RVSNGAN
 
 K = 5
 
@@ -31,8 +31,8 @@ METRICS = [
 
 
 if __name__ == '__main__':
-    src.config.logger.level = 'WARNING'
-    result_file = src.config.path.test_results / f'vstm_{TEST_NAME}.xlsx'
+    src.config.logging_config.level = 'WARNING'
+    result_file = src.config.path_config.test_results / f'vstm_{TEST_NAME}.xlsx'
     if os.path.exists(result_file):
         input(f'{result_file} already existed, continue?')
     all_methods = ['Original', *[i.__name__ for i in TRADITIONAL_METHODS], 'RGAN-TL']

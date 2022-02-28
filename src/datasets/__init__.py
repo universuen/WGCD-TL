@@ -1,10 +1,11 @@
 from numpy import ndarray
 
-from .basic_dataset import BasicDataset
-from .full_dataset import FullDataset
-from .negative_dataset import NegativeDataset
-from .positive_dataset import PositiveDataset
-from .roulette_positive_dataset import RoulettePositiveDataset
+from src.datasets.dataset_like import DatasetLike
+
+from src.datasets.full_dataset import FullDataset
+from src.datasets.negative_dataset import NegativeDataset
+from src.datasets.positive_dataset import PositiveDataset
+from src.datasets.roulette_positive_dataset import RoulettePositiveDataset
 
 
 training_samples: ndarray = None

@@ -1,1 +1,1 @@
-# Graduation Project
+# VGAN-BL

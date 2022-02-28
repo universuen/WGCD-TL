@@ -1,43 +1,43 @@
 import torch
 
-from src import config, models
+from src import config
 from src.models import GANGModel, GANDModel
 from src.datasets import PositiveDataset
-from ._base import Base
+from src.gans.gan_like import GANLike
 
 
-class GAN(Base):
+class GAN(GANLike):
     def __init__(self):
         super().__init__(GANGModel(), GANDModel())
 
     def _fit(self):
         d_optimizer = torch.optim.Adam(
             params=self.d.parameters(),
-            lr=config.gan.d_lr,
+            lr=config.gan_config.d_lr,
             betas=(0.5, 0.999),
         )
         g_optimizer = torch.optim.Adam(
             params=self.g.parameters(),
-            lr=config.gan.g_lr,
+            lr=config.gan_config.g_lr,
             betas=(0.5, 0.999),
         )
 
         x = PositiveDataset()[:][0].to(config.device)
-        for _ in range(0, config.gan.epochs, -1):
-            for __ in range(config.gan.d_loops):
+        for _ in range(0, config.gan_config.epochs, -1):
+            for __ in range(config.gan_config.d_loops):
                 self.d.zero_grad()
                 prediction_real = self.d(x)
                 loss_real = -torch.log(prediction_real.mean())
-                z = torch.randn(len(x), models.z_size, device=config.device)
+                z = torch.randn(len(x), config.model_config.z_size, device=config.device)
                 fake_x = self.g(z).detach()
                 prediction_fake = self.d(fake_x)
                 loss_fake = -torch.log(1 - prediction_fake.mean())
                 loss = loss_real + loss_fake
                 loss.backward()
                 d_optimizer.step()
-            for __ in range(config.gan.g_loops):
+            for __ in range(config.gan_config.g_loops):
                 self.g.zero_grad()
-                z = torch.randn(len(x), models.z_size, device=config.device)
+                z = torch.randn(len(x), config.model_config.z_size, device=config.device)
                 fake_x = self.g(z)
                 prediction = self.d(fake_x)
                 loss = -torch.log(prediction.mean())

@@ -1,12 +1,11 @@
 import torch
 
 from . import (
-    classifier,
-    gan,
-    logger,
-    path,
-    tr_ada_boost,
-    vae,
+    classifier_config,
+    gan_config,
+    logging_config,
+    path_config,
+    model_config,
 )
 
 # random seed

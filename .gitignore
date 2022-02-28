@@ -8,8 +8,5 @@ __pycache__/
 # virtual environment
 venv/
 
-# binary data
-data/
-
 # others
-tests/general_test.py
+data/

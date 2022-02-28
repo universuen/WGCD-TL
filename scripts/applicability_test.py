@@ -11,10 +11,10 @@ from scripts.datasets import DATASETS
 TEST_NAME = '2-11'
 
 PAIRS = [
-    (src.gans.GAN, src.gans.RGAN),
-    (src.gans.WGAN, src.gans.RWGAN),
-    (src.gans.WGANGP, src.gans.RWGANGP),
-    (src.gans.SNGAN, src.gans.RSNGAN),
+    (src.gans.GAN, src.gans.RVGAN),
+    (src.gans.WGAN, src.gans.RVWGAN),
+    (src.gans.WGANGP, src.gans.RVWGANGP),
+    (src.gans.SNGAN, src.gans.RVSNGAN),
 ]
 
 K = 5
@@ -42,8 +42,8 @@ def highlight_higher_cells(s: pd.Series) -> list[str]:
 
 
 if __name__ == '__main__':
-    src.config.logger.level = 'WARNING'
-    result_file = src.config.path.test_results / f'applicability_{TEST_NAME}.xlsx'
+    src.config.logging_config.level = 'WARNING'
+    result_file = src.config.path_config.test_results / f'applicability_{TEST_NAME}.xlsx'
     if os.path.exists(result_file):
         input(f'{result_file} already existed, continue?')
     all_gans = []

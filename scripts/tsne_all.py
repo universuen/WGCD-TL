@@ -23,10 +23,10 @@ GAN_MODELS = [
     src.gans.WGAN,
     src.gans.WGANGP,
     src.gans.SNGAN,
-    src.gans.RGAN,
-    src.gans.RWGAN,
-    src.gans.RWGANGP,
-    src.gans.RSNGAN,
+    src.gans.RVGAN,
+    src.gans.RVWGAN,
+    src.gans.RVWGANGP,
+    src.gans.RVSNGAN,
 ]
 
 if __name__ == '__main__':
@@ -109,5 +109,5 @@ if __name__ == '__main__':
     fig.set_dpi(100)
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3)
     plt.subplots_adjust(wspace=0.3, hspace=0.3)
-    plt.savefig(src.config.path.test_results / 'all_distribution.jpg')
+    plt.savefig(src.config.path_config.test_results / 'all_distribution.jpg')
     plt.show()
