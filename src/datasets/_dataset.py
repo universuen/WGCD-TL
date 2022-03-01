@@ -1,10 +1,11 @@
+from __future__ import annotations
 from typing import Callable
 
 import torch
-from torch.utils.data import Dataset
+from torch.utils import data
 
 
-class DatasetLike(Dataset):
+class Dataset(data.Dataset):
     def __init__(
             self,
             transform: Callable = None,
@@ -25,7 +26,7 @@ class DatasetLike(Dataset):
         label = self.target_transform(label) if self.target_transform else label
         return sample, label
 
-    def to(self, device: str):
+    def to(self, device: str) -> Dataset:
         self.samples = self.samples.to(device)
         self.labels = self.labels.to(device)
         return self

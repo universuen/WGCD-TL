@@ -19,7 +19,7 @@ if __name__ == '__main__':
         if label == 0:
             assert sample in negative_dataset.samples, 'all negative samples should be in negative dataset'
 
-    roulette_dataset = datasets.RoulettePositiveDataset()
-    print(roulette_dataset.get_roulette_samples(10000))
+    weighted_dataset = datasets.WeightedPositiveDataset()
+    print(weighted_dataset.get_n_samples(10000))
 
 

@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 
-def init_weights(layer: nn.Module):
+def _init_weights(layer: nn.Module):
     if type(layer) == nn.Linear:
         nn.init.normal_(layer.weight.data, 0.0, 0.02)
         if layer.bias is not None:
@@ -12,11 +12,11 @@ def init_weights(layer: nn.Module):
         nn.init.constant_(layer.bias.data, 0)
 
 
-class ModelLike(nn.Module):
+class Model(nn.Module):
     def __init__(self):
         super().__init__()
         self.model: nn.Module = None
-        self.apply(init_weights)
+        self.apply(_init_weights)
 
     def forward(self, x: torch.Tensor):
         return self.model(x)

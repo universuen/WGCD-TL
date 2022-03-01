@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
         src.utils.set_random_state()
         gan = TARGET_GAN()
-        gan.fit()
+        gan.fit(src.datasets.PositiveDataset())
         z = torch.randn([len(raw_y) - int(2 * sum(raw_y)), src.config.model_config.z_size], device=src.config.device)
         x = np.concatenate(
             [raw_x, gan.g(z).detach().cpu().numpy()],

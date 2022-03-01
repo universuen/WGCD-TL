@@ -2,10 +2,10 @@ from torch import nn
 
 from src import models
 from src.config import model_config
-from src.models.model_like import ModelLike
+from src.models._model import Model
 
 
-class GANGModel(ModelLike):
+class GANGModel(Model):
     def __init__(self):
         super().__init__()
         self.model = nn.Sequential(

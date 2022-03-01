@@ -11,7 +11,7 @@ FILE_NAME = 'wisconsin.dat'
 
 if __name__ == '__main__':
     src.utils.prepare_dataset(FILE_NAME)
-    r_dataset = src.datasets.RoulettePositiveDataset()
+    r_dataset = src.datasets.WeightedPositiveDataset()
     r_dataset.samples = torch.tensor(list(range(len(r_dataset))))
     sample_cnt = dict()
     for i in range(len(r_dataset)):

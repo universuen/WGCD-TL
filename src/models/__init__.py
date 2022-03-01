@@ -1,4 +1,4 @@
-from src.models.model_like import ModelLike
+from src.models._model import Model
 
 from src.models.classifier_model import ClassifierModel
 

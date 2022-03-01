@@ -2,10 +2,10 @@ from torch import nn
 from torch.nn.utils.parametrizations import spectral_norm
 
 from src import models
-from src.models.model_like import ModelLike
+from src.models._model import Model
 
 
-class SNGANDModel(ModelLike):
+class SNGANDModel(Model):
     def __init__(self):
         super().__init__()
         self.model = nn.Sequential(

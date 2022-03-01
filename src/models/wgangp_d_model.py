@@ -1,10 +1,10 @@
 from torch import nn
 
 from src import models
-from src.models.model_like import ModelLike
+from src.models._model import Model
 
 
-class WGANGPDModel(ModelLike):
+class WGANGPDModel(Model):
     def __init__(self):
         super().__init__()
         self.model = nn.Sequential(

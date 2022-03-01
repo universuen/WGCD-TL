@@ -88,7 +88,7 @@ def get_final_test_metrics(statistics: dict) -> dict:
 #     return torch.topk(dist, k, largest=False).indices
 
 
-def get_gan_dataset(gan: src.types.GANLike) -> src.types.DatasetLike:
+def get_gan_dataset(gan: src.types.GAN) -> src.types.Dataset:
     gan.fit()
     full_dataset = src.datasets.FullDataset().to(src.config.device)
     pos_dataset = src.datasets.PositiveDataset().to(src.config.device)

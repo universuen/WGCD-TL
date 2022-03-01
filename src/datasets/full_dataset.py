@@ -3,10 +3,10 @@ from typing import Callable
 import torch
 
 from src import datasets
-from src.datasets.dataset_like import DatasetLike
+from src.datasets._dataset import Dataset
 
 
-class FullDataset(DatasetLike):
+class FullDataset(Dataset):
     def __init__(self, training: bool = True, transform: Callable = None, target_transform: Callable = None):
         super().__init__(transform, target_transform)
         self.samples = datasets.training_samples if training else datasets.test_samples

@@ -1,3 +1,3 @@
-from src.datasets.dataset_like import DatasetLike
-from src.models.model_like import ModelLike
-from src.gans.gan_like import GANLike
+from src.datasets import Dataset
+from src.models import Model
+from src.gans import GAN

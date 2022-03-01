@@ -4,29 +4,30 @@ import torch
 
 from src import config
 from src.logger import Logger
-from src.models.model_like import ModelLike
+from src.models import Model
+from src.datasets import Dataset
 
 
-class GANLike:
+class GAN:
     def __init__(
             self,
-            g: ModelLike,
-            d: ModelLike,
+            g: Model,
+            d: Model,
     ):
         self.logger = Logger(self.__class__.__name__)
         self.g = g.to(config.device)
         self.d = d.to(config.device)
 
-    def fit(self):
+    def fit(self, dataset: Dataset = None):
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
-        self._fit()
+        self._fit(dataset)
         self.g.eval()
         self.d.eval()
         self.logger.info(f'Finished training')
 
     @abstractmethod
-    def _fit(self):
+    def _fit(self, dataset: Dataset):
         pass
 
     def generate_samples(self, z: torch.Tensor):

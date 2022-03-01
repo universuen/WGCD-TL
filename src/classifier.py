@@ -7,7 +7,7 @@ from torch.optim import Adam
 from sklearn.metrics import roc_auc_score, confusion_matrix
 
 from src import config, logger, models
-from src.types import DatasetLike
+from src.types import Dataset
 
 
 class Classifier:
@@ -21,7 +21,7 @@ class Classifier:
             'AUC': .0,
         }
 
-    def fit(self, dataset: DatasetLike, weights: torch.Tensor = None):
+    def fit(self, dataset: Dataset, weights: torch.Tensor = None):
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
 
@@ -52,7 +52,7 @@ class Classifier:
         prob = self.model(x)
         return self._prob2label(prob)
 
-    def test(self, test_dataset: DatasetLike):
+    def test(self, test_dataset: Dataset):
         with torch.no_grad():
             x, label = test_dataset.samples.cpu(), test_dataset.labels.cpu()
             predicted_label = self.predict(x).cpu()

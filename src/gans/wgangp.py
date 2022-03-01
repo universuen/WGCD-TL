@@ -2,15 +2,15 @@ import torch
 
 from src import config
 from src.models import WGANGPGModel, WGANGPDModel
-from src.datasets import PositiveDataset
-from .gan_like import GANLike
+from src.datasets import Dataset
+from src.gans._gan import GAN
 
 
-class WGANGP(GANLike):
+class WGANGP(GAN):
     def __init__(self):
         super().__init__(WGANGPGModel(), WGANGPDModel())
 
-    def _fit(self):
+    def _fit(self, dataset: Dataset):
         d_optimizer = torch.optim.Adam(
             params=self.d.parameters(),
             lr=config.gan_config.d_lr,
@@ -22,7 +22,7 @@ class WGANGP(GANLike):
             betas=(0.5, 0.999),
         )
 
-        x = PositiveDataset()[:][0].to(config.device)
+        x = Dataset.to(config.device).samples
         for _ in range(config.gan_config.epochs):
             for __ in range(config.gan_config.d_loops):
                 self.d.zero_grad()

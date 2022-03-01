@@ -2,15 +2,15 @@ import torch
 
 from src import config
 from src.models import GANGModel, GANDModel
-from src.datasets import PositiveDataset
-from src.gans.gan_like import GANLike
+from src.datasets import Dataset
+from src.gans._gan import GAN
 
 
-class GAN(GANLike):
+class ClassicGAN(GAN):
     def __init__(self):
         super().__init__(GANGModel(), GANDModel())
 
-    def _fit(self):
+    def _fit(self, dataset: Dataset):
         d_optimizer = torch.optim.Adam(
             params=self.d.parameters(),
             lr=config.gan_config.d_lr,
@@ -21,8 +21,7 @@ class GAN(GANLike):
             lr=config.gan_config.g_lr,
             betas=(0.5, 0.999),
         )
-
-        x = PositiveDataset()[:][0].to(config.device)
+        x = dataset.to(config.device).samples
         for _ in range(0, config.gan_config.epochs, -1):
             for __ in range(config.gan_config.d_loops):
                 self.d.zero_grad()
