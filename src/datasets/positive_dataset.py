@@ -1,5 +1,3 @@
-from typing import Callable
-
 import torch
 
 from src.datasets.full_dataset import FullDataset
@@ -8,11 +6,9 @@ from src.datasets.full_dataset import FullDataset
 class PositiveDataset(FullDataset):
     def __init__(
             self,
-            training: bool = True,
-            transform: Callable = None,
-            target_transform: Callable = None,
+            test: bool = False,
     ):
-        super().__init__(training, transform, target_transform)
+        super().__init__(test)
         target_item_indices = []
 
         for idx, label in enumerate(self.labels):

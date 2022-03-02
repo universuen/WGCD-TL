@@ -14,8 +14,8 @@ if __name__ == '__main__':
     utils.set_random_state()
     classifier = Classifier('Test_Normal_Train')
     classifier.fit(
-        dataset=FullDataset(training=True),
+        dataset=FullDataset(),
     )
-    classifier.test(FullDataset(training=False))
+    classifier.test(FullDataset(test=True))
     for name, value in classifier.metrics.items():
         print(f'{name:<15}:{value:>10.4f}')

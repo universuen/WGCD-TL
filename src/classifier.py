@@ -3,7 +3,7 @@ from math import sqrt
 import torch
 import numpy as np
 from torch.nn.functional import binary_cross_entropy
-from torch.optim import Adam
+from torch.optim import Adam, Optimizer
 from sklearn.metrics import roc_auc_score, confusion_matrix
 
 from src import config, logger, models
@@ -21,16 +21,16 @@ class Classifier:
             'AUC': .0,
         }
 
-    def fit(self, dataset: Dataset, weights: torch.Tensor = None):
+    def fit(self, dataset: Dataset, optimizer: Optimizer = None):
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
 
-        weights = torch.ones(len(dataset), device=config.device) if weights is None else weights.to(config.device)
-        optimizer = Adam(
-            params=self.model.parameters(),
-            lr=config.classifier_config.lr,
-            betas=(0.5, 0.9),
-        )
+        if optimizer is None:
+            optimizer = Adam(
+                params=self.model.parameters(),
+                lr=config.classifier_config.lr,
+                betas=(0.5, 0.9),
+            )
 
         x, label = dataset.samples.to(config.device), dataset.labels.to(config.device)
         for _ in range(config.classifier_config.epochs):
@@ -39,7 +39,6 @@ class Classifier:
             loss = binary_cross_entropy(
                 input=prediction,
                 target=label,
-                weight=weights,
             )
             loss.backward()
             optimizer.step()
@@ -47,7 +46,7 @@ class Classifier:
         self.model.eval()
         self.logger.info('Finished training')
 
-    def predict(self, x):
+    def predict(self, x: torch.Tensor) -> torch.Tensor:
         x = x.to(config.device)
         prob = self.model(x)
         return self._prob2label(prob)

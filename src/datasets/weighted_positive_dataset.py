@@ -1,7 +1,5 @@
 import random
-from typing import Callable
 
-# import numpy as np
 import torch
 
 from src.datasets import PositiveDataset, NegativeDataset
@@ -10,14 +8,13 @@ from src.datasets import PositiveDataset, NegativeDataset
 class WeightedPositiveDataset(PositiveDataset):
     def __init__(
             self,
-            training: bool = True,
-            transform: Callable = None,
-            target_transform: Callable = None,
+            test: bool = False,
     ):
-        super().__init__(training, transform, target_transform)
+        super().__init__(test)
+        self.is_weighted = True
         # calculate fits
-        pos_samples = PositiveDataset(training, transform, target_transform).samples
-        neg_samples = NegativeDataset(training, transform, target_transform).samples
+        pos_samples = PositiveDataset(test).samples
+        neg_samples = NegativeDataset(test).samples
         self.dists = torch.zeros([len(pos_samples) + len(neg_samples)] * 2)
         self.weights = torch.zeros(len(pos_samples))
         # calculate distances
@@ -38,14 +35,15 @@ class WeightedPositiveDataset(PositiveDataset):
             ]
         )
         k = int(len(all_samples) / 10)
-        instabilities = torch.zeros(len(pos_samples))
+        entropy = torch.zeros(len(pos_samples))
         for i, _ in enumerate(pos_samples):
             indices = torch.topk(self.dists[i], k, largest=False).indices
             labels = all_labels[indices]
-            instabilities[i] = 1 - torch.cos(2 * torch.pi * sum(labels) / k)
-        self.weights = instabilities / (sum(instabilities) + 1e-5)
+            p = sum(labels) / k - 1e-5  # make sure 0 < p < 1
+            entropy[i] = -(p * torch.log(p) + (1-p) * torch.log(1-p))
+        self.weights = entropy / (sum(entropy) + 1e-5)
 
-    def get_n_samples(self, size: int) -> torch.Tensor:
+    def _get_weighted_samples(self, size: int) -> torch.Tensor:
         return torch.stack(
             random.choices(
                 self.samples,

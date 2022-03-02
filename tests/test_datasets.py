@@ -15,11 +15,11 @@ if __name__ == '__main__':
 
     negative_dataset = datasets.NegativeDataset()
     assert sum(negative_dataset.labels) == 0, 'all samples in negative dataset should be negative'
-    for sample, label in full_dataset:
+    for sample, label in zip(full_dataset.samples, full_dataset.labels):
         if label == 0:
             assert sample in negative_dataset.samples, 'all negative samples should be in negative dataset'
 
     weighted_dataset = datasets.WeightedPositiveDataset()
-    print(weighted_dataset.get_n_samples(10000))
+    print(weighted_dataset.get_samples(10000))
 
 

@@ -12,3 +12,5 @@ if __name__ == '__main__':
     logger.warning('warning test')
     logger.error('error test')
     logger.critical('critical test')
+    logger.turn_off()
+    logger.debug("""you can't see me""")

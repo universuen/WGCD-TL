@@ -21,13 +21,14 @@ class GAN:
     def fit(self, dataset: Dataset = None):
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
-        self._fit(dataset)
+        x = dataset.to(config.device).get_samples()
+        self._fit(x)
         self.g.eval()
         self.d.eval()
         self.logger.info(f'Finished training')
 
     @abstractmethod
-    def _fit(self, dataset: Dataset):
+    def _fit(self, x: torch.Tensor):
         pass
 
     def generate_samples(self, z: torch.Tensor):

@@ -10,7 +10,7 @@ from sklearn.manifold import TSNE
 
 import src
 
-TARGET_GAN = src.gans.SNGAN
+TARGET_GAN = src.gans.ClassicGAN
 
 if __name__ == '__main__':
     result = dict()
@@ -101,8 +101,8 @@ if __name__ == '__main__':
     for dataset_name in datasets:
         print(f'***********************{dataset_name}***********************')
         src.utils.prepare_dataset(dataset_name)
-        dataset = src.datasets.FullDataset(training=True)
-        raw_x, raw_y = dataset[:]
+        dataset = src.datasets.FullDataset()
+        raw_x, raw_y = dataset.samples, dataset.labels
         raw_x = raw_x.numpy()
         raw_y = raw_y.numpy()
 

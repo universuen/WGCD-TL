@@ -1,4 +1,5 @@
 import logging
+import math
 
 from . import config
 
@@ -15,3 +16,14 @@ class Logger(logging.Logger):
         fh.setFormatter(config.logging_config.file_formatter)
         fh.setLevel(config.logging_config.level)
         self.addHandler(fh)
+
+    def turn_on(self):
+        self.setLevel(config.logging_config.level)
+        for handler in self.handlers:
+            handler.setLevel(config.logging_config.level)
+
+    def turn_off(self):
+        self.setLevel(logging.CRITICAL + 1)
+        for handler in self.handlers:
+            handler.setLevel(logging.CRITICAL + 1)
+

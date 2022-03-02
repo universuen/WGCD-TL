@@ -6,3 +6,4 @@ from src import classifier
 from src import logger
 from src import utils
 from src import types
+from src import transfer_learner

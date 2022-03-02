@@ -1,13 +1,15 @@
-import context
+global_var = 0
+
+
+def func_1():
+    global global_var
+    global_var = 1
+
+
+def func_2():
+    print(global_var)
+
 
 if __name__ == '__main__':
-    import torch
-    import random
-
-    print(
-        random.choices(
-            population=[1, 2, 3],
-            weights=torch.tensor([1, 1, 200]),
-            k=20,
-        )
-    )
+    func_1()
+    func_2()

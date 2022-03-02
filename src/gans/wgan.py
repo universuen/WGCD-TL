@@ -2,7 +2,6 @@ import torch
 
 from src import config
 from src.models import WGANGModel, WGANDModel
-from src.datasets import Dataset
 from src.gans._gan import GAN
 
 
@@ -10,7 +9,7 @@ class WGAN(GAN):
     def __init__(self):
         super().__init__(WGANGModel(), WGANDModel())
 
-    def _fit(self, dataset: Dataset):
+    def _fit(self, x: torch.Tensor):
         d_optimizer = torch.optim.RMSprop(
             params=self.d.parameters(),
             lr=config.gan_config.d_lr
@@ -20,7 +19,6 @@ class WGAN(GAN):
             lr=config.gan_config.g_lr,
         )
 
-        x = dataset.to(config.device).samples
         for _ in range(config.gan_config.epochs):
             for __ in range(config.gan_config.d_loops):
                 self.d.zero_grad()

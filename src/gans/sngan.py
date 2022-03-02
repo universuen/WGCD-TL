@@ -2,7 +2,6 @@ import torch
 
 from src import config
 from src.models import SNGANGModel, SNGANDModel
-from src.datasets import Dataset
 from ._gan import GAN
 
 
@@ -10,7 +9,7 @@ class SNGAN(GAN):
     def __init__(self):
         super().__init__(SNGANGModel(), SNGANDModel())
 
-    def _fit(self, dataset: Dataset):
+    def _fit(self, x: torch.Tensor):
         d_optimizer = torch.optim.Adam(
             params=self.d.parameters(),
             lr=config.gan_config.d_lr,
@@ -22,7 +21,6 @@ class SNGAN(GAN):
             betas=(0.5, 0.999),
         )
 
-        x = dataset.to(config.device).samples
         for _ in range(config.gan_config.epochs):
             for __ in range(config.gan_config.d_loops):
                 self.d.zero_grad()

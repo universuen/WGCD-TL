@@ -7,9 +7,9 @@ from src.datasets._dataset import Dataset
 
 
 class FullDataset(Dataset):
-    def __init__(self, training: bool = True, transform: Callable = None, target_transform: Callable = None):
-        super().__init__(transform, target_transform)
-        self.samples = datasets.training_samples if training else datasets.test_samples
+    def __init__(self, test: bool = False):
+        super().__init__(test)
+        self.samples = datasets.test_samples if test else datasets.training_samples
         self.samples = torch.from_numpy(self.samples).float()
-        self.labels = datasets.training_labels if training else datasets.test_labels
+        self.labels = datasets.test_labels if test else datasets.training_labels
         self.labels = torch.from_numpy(self.labels).float()
