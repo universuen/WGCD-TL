@@ -9,7 +9,7 @@ from . import (
 )
 
 # random seed
-seed = 0
+seed = 1
 
 # device used for training
 device: str = 'auto'

@@ -10,7 +10,7 @@ from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, BorderlineS
 import src
 from scripts.datasets import DATASETS
 
-TEST_NAME = '2-14'
+TEST_NAME = '3-2'
 
 TRADITIONAL_METHODS = [
     RandomOverSampler,
@@ -19,7 +19,7 @@ TRADITIONAL_METHODS = [
     BorderlineSMOTE,
 ]
 
-RGAN = src.gans.RVSNGAN
+GAN = src.gans.SNGAN
 
 K = 5
 
@@ -29,13 +29,12 @@ METRICS = [
     'G-Mean',
 ]
 
-
 if __name__ == '__main__':
     src.config.logging_config.level = 'WARNING'
     result_file = src.config.path_config.test_results / f'vstm_{TEST_NAME}.xlsx'
     if os.path.exists(result_file):
         input(f'{result_file} already existed, continue?')
-    all_methods = ['Original', *[i.__name__ for i in TRADITIONAL_METHODS], 'RGAN-TL']
+    all_methods = ['Baseline', *[i.__name__ for i in TRADITIONAL_METHODS], 'GAN-TL']
     result = {
         k: pd.DataFrame(
             {
@@ -63,23 +62,23 @@ if __name__ == '__main__':
             src.datasets.training_labels = labels[training_indices]
             src.datasets.test_samples = samples[test_indices]
             src.datasets.test_labels = labels[test_indices]
-            training_dataset = src.datasets.FullDataset(training=True)
-            test_dataset = src.datasets.FullDataset(training=False)
-            # test original classifier
+            training_dataset = src.datasets.FullDataset()
+            test_dataset = src.datasets.FullDataset(test=True)
+            # test baseline classifier
             src.utils.set_random_state()
-            o_classifier = src.classifier.Classifier('Original')
+            o_classifier = src.classifier.Classifier('Baseline')
             o_classifier.fit(training_dataset)
             o_classifier.test(test_dataset)
             for metric_name in METRICS:
-                temp_result[metric_name]['Original'].append(o_classifier.metrics[metric_name])
+                temp_result[metric_name]['Baseline'].append(o_classifier.metrics[metric_name])
             # test traditional methods
             for METHOD in TRADITIONAL_METHODS:
                 try:
                     x, y = training_dataset.samples, training_dataset.labels
-                    x = x.numpy()
-                    y = y.numpy()
+                    x = x.cpu().numpy()
+                    y = y.cpu().numpy()
                     x, y = METHOD(random_state=src.config.seed).fit_resample(x, y)
-                    balanced_dataset = src.datasets.BasicDataset()
+                    balanced_dataset = src.datasets.Dataset()
                     balanced_dataset.samples = torch.from_numpy(x)
                     balanced_dataset.labels = torch.from_numpy(y)
                     src.utils.set_random_state()
@@ -93,12 +92,16 @@ if __name__ == '__main__':
                         temp_result[metric_name][METHOD.__name__].append(0)
             # test RGAN-TL
             src.utils.set_random_state()
-            rgan_dataset = src.utils.get_rgan_dataset(RGAN())
-            esb_classifier = src.tr_ada_boost.TrAdaBoost()
-            esb_classifier.fit(rgan_dataset, )
-            esb_classifier.test(test_dataset)
+            gan = src.gans.SNGAN()
+            gan.fit(src.datasets.WeightedPositiveDataset())
+            tl_classifier = src.transfer_learner.TransferLearner()
+            tl_classifier.fit(
+                dataset=training_dataset,
+                gan=gan,
+            )
+            tl_classifier.test(test_dataset)
             for metric_name in METRICS:
-                temp_result[metric_name]['RGAN-TL'].append(esb_classifier.metrics[metric_name])
+                temp_result[metric_name]['GAN-TL'].append(tl_classifier.metrics[metric_name])
         # calculate final metrics
         for method_name in all_methods:
             for metric_name in METRICS:

@@ -18,12 +18,12 @@ if __name__ == '__main__':
         sample_cnt[r_dataset.samples[i].item()] = 0
     assert len(sample_cnt) == len(r_dataset)
 
-    for i in r_dataset.get_roulette_samples(10000):
+    for i in r_dataset.get_samples(10000):
         sample_cnt[i.item()] += 1
 
     x = list(range(len(r_dataset)))
     _, (ax1, ax2) = plt.subplots(2)
-    ax1.plot(x, r_dataset.fits, 'tab:blue')
+    ax1.plot(x, r_dataset.weights, 'tab:blue')
     ax2.plot(x, sample_cnt.values(), 'tab:orange')
     ax1.set_xlabel('sample ID')
     ax2.set_xlabel('sample ID')

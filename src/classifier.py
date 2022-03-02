@@ -7,7 +7,7 @@ from torch.optim import Adam, Optimizer
 from sklearn.metrics import roc_auc_score, confusion_matrix
 
 from src import config, logger, models
-from src.types import Dataset
+from src.types import Dataset, GAN
 
 
 class Classifier:
@@ -21,7 +21,12 @@ class Classifier:
             'AUC': .0,
         }
 
-    def fit(self, dataset: Dataset, optimizer: Optimizer = None):
+    def fit(
+            self,
+            dataset: Dataset,
+            optimizer: Optimizer = None,
+            gan: GAN = None,
+    ):
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
 
@@ -31,14 +36,30 @@ class Classifier:
                 lr=config.classifier_config.lr,
                 betas=(0.5, 0.9),
             )
+        dataset.to(config.device)
+        if gan is None:
+            x, labels = dataset.samples, dataset.labels
+            weights = torch.ones(len(x), device=config.device)
+        else:
+            real_x, real_labels = dataset.samples, dataset.labels
+            real_x_weights = torch.ones(len(real_x), device=config.device)
+            pos_num = int(sum(real_labels))
+            neg_num = len(real_labels) - pos_num
+            assert pos_num < neg_num, 'positive samples must be less than negative samples'
+            generated_x = gan.generate_samples(neg_num - pos_num)
+            scores = gan.d(generated_x).squeeze(dim=1).detach()
+            generated_x_weights = (scores - scores.min()) / (scores.max() - scores.min())
+            x = torch.cat([real_x, generated_x])
+            labels = torch.cat([real_labels, torch.ones(len(generated_x), device=config.device)])
+            weights = torch.cat([real_x_weights, generated_x_weights])
 
-        x, label = dataset.samples.to(config.device), dataset.labels.to(config.device)
         for _ in range(config.classifier_config.epochs):
             self.model.zero_grad()
             prediction = self.model(x).squeeze()
             loss = binary_cross_entropy(
                 input=prediction,
-                target=label,
+                target=labels,
+                weight=weights,
             )
             loss.backward()
             optimizer.step()

@@ -31,5 +31,6 @@ class GAN:
     def _fit(self, x: torch.Tensor):
         pass
 
-    def generate_samples(self, z: torch.Tensor):
-        return self.g(z)
+    def generate_samples(self, size: int):
+        z = torch.randn(size, config.model_config.z_size, device=config.device)
+        return self.g(z).detach()
