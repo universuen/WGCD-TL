@@ -40,8 +40,6 @@ def highlight_higher_cells(s: pd.Series) -> list[str]:
     return result_
 
 
-src.utils.turn_on_test_mode()
-
 if __name__ == '__main__':
     src.config.logging_config.level = 'WARNING'
     result_file = src.config.path_config.test_results / f'applicability_{TEST_NAME}.xlsx'

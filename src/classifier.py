@@ -43,12 +43,27 @@ class Classifier:
         else:
             real_x, real_labels = dataset.samples, dataset.labels
             real_x_weights = torch.ones(len(real_x), device=config.device)
-            pos_num = int(sum(real_labels))
-            neg_num = len(real_labels) - pos_num
-            assert pos_num < neg_num, 'positive samples must be less than negative samples'
+            # get positive indices and negative indices
+            pos_indices, neg_indices = [], []
+            for idx, item in enumerate(real_labels):
+                if item == 1:
+                    pos_indices.append(idx)
+                elif item == 0:
+                    neg_indices.append(idx)
+                else:
+                    raise ValueError(f"Invalid value found in labels: {item}")
+            # count positive samples and negative samples
+            pos_num = len(pos_indices)
+            neg_num = len(neg_indices)
+            assert pos_num < neg_num
+            # calculate weights
             generated_x = gan.generate_samples(neg_num - pos_num)
             scores = gan.d(generated_x).squeeze(dim=1).detach()
             generated_x_weights = (scores - scores.min()) / (scores.max() - scores.min())
+            eta = neg_num / (sum(generated_x_weights) + pos_num)
+            assert eta >= 1
+            real_x_weights[pos_indices] *= eta
+            generated_x_weights *= eta
             x = torch.cat([real_x, generated_x])
             labels = torch.cat([real_labels, torch.ones(len(generated_x), device=config.device)])
             weights = torch.cat([real_x_weights, generated_x_weights])

@@ -92,6 +92,7 @@ def get_balanced_dataset(imbalanced_dataset: src.types.Dataset, gan: src.types.G
 
 
 def turn_on_test_mode():
+    print(f"""{"TEST MODE IS ON!":*^100}""")
     src.config.gan_config.epochs = 10
     src.config.classifier_config.epochs = 10
 
