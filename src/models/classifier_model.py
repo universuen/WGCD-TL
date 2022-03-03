@@ -9,18 +9,13 @@ class ClassifierModel(Model):
     def __init__(self):
         super().__init__()
         self.main_model = nn.Sequential(
-            nn.Linear(models.x_size, 32),
+            nn.Linear(models.x_size, 16),
             nn.LeakyReLU(0.2),
-            nn.Linear(32, 128),
+            nn.Linear(16, 32),
             nn.LeakyReLU(0.2),
-            nn.Linear(128, 512),
-            nn.LeakyReLU(0.2),
-            nn.Linear(512, 128),
-            nn.LeakyReLU(0.2),
-            nn.Linear(128, 32),
-            nn.LeakyReLU(0.2),
+            nn.Linear(32, 8),
         )
-        self.last_layer = nn.Linear(32, 1)
+        self.last_layer = nn.Linear(8, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if not self.initialized:

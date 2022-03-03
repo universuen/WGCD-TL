@@ -18,7 +18,7 @@ class GAN:
         self.g = g.to(config.device)
         self.d = d.to(config.device)
 
-    def fit(self, dataset: Dataset = None):
+    def fit(self, dataset: Dataset):
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
         x = dataset.to(config.device).get_samples()

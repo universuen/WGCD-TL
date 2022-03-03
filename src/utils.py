@@ -77,47 +77,22 @@ def get_final_test_metrics(statistics: dict) -> dict:
     return metrics
 
 
-# def normalize(x: torch.Tensor) -> torch.Tensor:
-#     return (x - x.min()) / (x.max() - x.min())
+def get_balanced_dataset(imbalanced_dataset: src.types.Dataset, gan: src.types.GAN) -> src.types.Dataset:
+    real_x, real_labels = imbalanced_dataset.samples, imbalanced_dataset.labels
+    pos_num = int(sum(real_labels))
+    neg_num = len(real_labels) - pos_num
+    generated_x = gan.generate_samples(neg_num - pos_num)
+    x = torch.cat([real_x, generated_x])
+    labels = torch.cat([real_labels, torch.ones(len(generated_x), device=src.config.device)])
+    balanced_dataset = src.datasets.Dataset()
+    balanced_dataset.samples = x
+    balanced_dataset.labels = labels
+    balanced_dataset.to(src.config.device)
+    return balanced_dataset
 
 
-# def get_knn_indices(sample: torch.Tensor, all_samples: torch.Tensor, k: int = 5) -> torch.Tensor:
-#     dist = torch.empty(len(all_samples))
-#     for i, v in enumerate(all_samples):
-#         dist[i] = torch.norm(sample - v, p=2)
-#     return torch.topk(dist, k, largest=False).indices
-
-
-def get_gan_dataset(gan: src.types.GAN) -> src.types.Dataset:
-    gan.fit()
-    full_dataset = src.datasets.FullDataset().to(src.config.device)
-    pos_dataset = src.datasets.PositiveDataset().to(src.config.device)
-    neg_dataset = src.datasets.NegativeDataset().to(src.config.device)
-    target_dataset = src.datasets.FullDataset().to(src.config.device)
-    # generate positive samples until reaching balance
-    total_pos_cnt = len(pos_dataset)
-    total_neg_cnt = len(neg_dataset)
-
-    target_sample_num = total_neg_cnt - total_pos_cnt
-    if target_sample_num <= 0:
-        return full_dataset
-    z = torch.rand(target_sample_num, src.config.model_config.z_size, device=src.config.device)
-    new_samples = gan.generate_samples(z)
-    new_labels = torch.ones(target_sample_num, device=src.config.device)
-    target_dataset.samples = torch.cat(
-        [
-            target_dataset.samples,
-            new_samples,
-        ],
-    )
-    target_dataset.labels = torch.cat(
-        [
-            target_dataset.labels,
-            new_labels,
-        ]
-    )
-    target_dataset.samples = target_dataset.samples.detach()
-    target_dataset.labels = target_dataset.labels.detach()
-    return target_dataset
+def turn_on_test_mode():
+    src.config.gan_config.epochs = 10
+    src.config.classifier_config.epochs = 10
 
 
