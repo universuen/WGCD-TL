@@ -57,13 +57,17 @@ class Classifier:
             neg_num = len(neg_indices)
             assert pos_num < neg_num
             # calculate weights
-            generated_x = gan.generate_samples(neg_num - pos_num)
+            generated_x_num = neg_num - pos_num
+            generated_x = gan.generate_samples(generated_x_num)
             scores = gan.d(generated_x).squeeze(dim=1).detach()
             generated_x_weights = (scores - scores.min()) / (scores.max() - scores.min())
-            eta = neg_num / (sum(generated_x_weights) + pos_num)
-            assert eta >= 1
-            real_x_weights[pos_indices] *= eta
-            generated_x_weights *= eta
+            # eta = neg_num / (sum(generated_x_weights) + pos_num)
+            # assert eta >= 1
+            # real_x_weights[pos_indices] *= eta
+            # generated_x_weights *= eta
+            delta = (neg_num - (pos_num + sum(generated_x_weights))) / neg_num
+            real_x_weights[pos_indices] += delta
+            generated_x_weights += delta
             x = torch.cat([real_x, generated_x])
             labels = torch.cat([real_labels, torch.ones(len(generated_x), device=config.device)])
             weights = torch.cat([real_x_weights, generated_x_weights])

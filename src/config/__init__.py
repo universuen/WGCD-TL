@@ -9,6 +9,9 @@ from . import (
 )
 
 # random seed
+"""
+WARNING: The random seed can only guarantee the reproducibility on the same computer with the same environment!
+"""
 seed = 1
 
 # device used for training

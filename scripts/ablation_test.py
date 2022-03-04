@@ -1,3 +1,5 @@
+import context
+
 import os
 
 import pandas as pd
@@ -8,7 +10,7 @@ from tqdm import tqdm
 import src
 from scripts.datasets import DATASETS
 
-TEST_NAME = '3-3'
+TEST_NAME = 'delta'
 
 K = 5
 
@@ -87,12 +89,12 @@ if __name__ == '__main__':
                     balanced_dataset = src.utils.get_balanced_dataset(training_dataset, w_sngan)
                     classifier.fit(balanced_dataset)
                 elif method_name == 'SNGAN-W-BL':
-                    classifier = src.classifier.Classifier('SNGAN-W')
+                    classifier = src.classifier.Classifier('SNGAN-W-BL')
                     classifier.fit(
                         dataset=training_dataset,
                         gan=w_sngan,
                     )
-                elif method_name == 'SNGAN-W-TL-BL':
+                elif method_name == 'SNGAN-W-BL-TL':
                     classifier = src.transfer_learner.TransferLearner()
                     classifier.fit(
                         dataset=training_dataset,

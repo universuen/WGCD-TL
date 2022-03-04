@@ -1,3 +1,5 @@
+import context
+
 import os
 
 import torch
@@ -10,7 +12,7 @@ from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, BorderlineS
 import src
 from scripts.datasets import DATASETS
 
-TEST_NAME = '3-3'
+TEST_NAME = 'delta'
 
 TRADITIONAL_METHODS = [
     RandomOverSampler,

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3.9.7
+
 from src import config
 from src import datasets
 from src import gans

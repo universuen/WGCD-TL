@@ -1,3 +1,5 @@
+import context
+
 import os
 
 import pandas as pd
@@ -8,7 +10,7 @@ from tqdm import tqdm
 import src
 from scripts.datasets import DATASETS
 
-TEST_NAME = '3-3'
+TEST_NAME = 'delta'
 
 GANS = [
     src.gans.ClassicGAN,

@@ -6,10 +6,12 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE, RandomOverSampler
+from tqdm import tqdm
 
 import src
+from scripts.datasets import DATASETS
 
-DATASET = 'wisconsin.dat'
+# DATASET = 'wisconsin.dat'
 
 TRADITIONAL_METHODS = [
     RandomOverSampler,
@@ -19,23 +21,20 @@ TRADITIONAL_METHODS = [
 ]
 
 GAN_MODELS = [
-    src.gans.GAN,
+    src.gans.ClassicGAN,
     src.gans.WGAN,
     src.gans.WGANGP,
     src.gans.SNGAN,
-    src.gans.RVGAN,
-    src.gans.RVWGAN,
-    src.gans.RVWGANGP,
-    src.gans.RVSNGAN,
 ]
 
-if __name__ == '__main__':
+
+def tsne(dataset_name: str) -> None:
     result = dict()
     src.utils.set_random_state()
-    src.utils.prepare_dataset(DATASET)
-    dataset = src.datasets.FullDataset(training=True)
+    src.utils.prepare_dataset(dataset_name)
+    dataset = src.datasets.FullDataset()
 
-    raw_x, raw_y = dataset[:]
+    raw_x, raw_y = dataset.samples, dataset.labels
     raw_x = raw_x.numpy()
     raw_y = raw_y.numpy()
 
@@ -49,11 +48,11 @@ if __name__ == '__main__':
         ).fit_transform(x)
         result[M.__name__] = [embedded_x, y]
 
-    for M in GAN_MODELS:
+    for GAN in GAN_MODELS:
         src.utils.set_random_state()
-        gan = M()
-        gan.fit()
-        z = torch.randn([len(raw_y) - int(2 * sum(raw_y)), src.models.z_size], device=src.config.device)
+        gan = GAN()
+        gan.fit(dataset)
+        z = torch.randn([len(raw_y) - int(2 * sum(raw_y)), src.config.model_config.z_size], device=src.config.device)
         x = np.concatenate([raw_x, gan.g(z).detach().cpu().numpy()])
         y = np.concatenate([raw_y, np.full(len(x) - len(raw_x), 2)])
         embedded_x = TSNE(
@@ -61,7 +60,21 @@ if __name__ == '__main__':
             init='random',
             random_state=src.config.seed,
         ).fit_transform(x)
-        result[M.__name__] = [embedded_x, y]
+        result[GAN.__name__] = [embedded_x, y]
+
+    for GAN in GAN_MODELS:
+        src.utils.set_random_state()
+        gan = GAN()
+        gan.fit(src.datasets.WeightedPositiveDataset())
+        z = torch.randn([len(raw_y) - int(2 * sum(raw_y)), src.config.model_config.z_size], device=src.config.device)
+        x = np.concatenate([raw_x, gan.g(z).detach().cpu().numpy()])
+        y = np.concatenate([raw_y, np.full(len(x) - len(raw_x), 2)])
+        embedded_x = TSNE(
+            learning_rate='auto',
+            init='random',
+            random_state=src.config.seed,
+        ).fit_transform(x)
+        result[f'{GAN.__name__}_W'] = [embedded_x, y]
 
     sns.set_style('white')
     fig, axes = plt.subplots(3, 4)
@@ -109,5 +122,18 @@ if __name__ == '__main__':
     fig.set_dpi(100)
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3)
     plt.subplots_adjust(wspace=0.3, hspace=0.3)
-    plt.savefig(src.config.path_config.test_results / 'all_distribution.jpg')
-    plt.show()
+    plt.savefig(src.config.path_config.test_results / f'tsne_{dataset_name}.jpg')
+
+
+if __name__ == '__main__':
+    src.config.logging_config.level = 'CRITICAL'
+    successful_datasets = []
+    for dataset_name in tqdm(DATASETS):
+        try:
+            tsne(dataset_name)
+            successful_datasets.append(dataset_name)
+        except RuntimeError:
+            pass
+    with open(src.config.path_config.test_results / 'tsne_datasets.txt', 'w') as f:
+        for i in successful_datasets:
+            f.write(f'{i}\n')
