@@ -30,4 +30,4 @@ class Dataset:
             return self.samples[:size]
 
     def _get_weighted_samples(self, size: int) -> torch.Tensor:
-        raise NotImplementedError
+        pass

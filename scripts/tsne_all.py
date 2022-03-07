@@ -9,7 +9,7 @@ from imblearn.over_sampling import SMOTE, ADASYN, SVMSMOTE, RandomOverSampler
 from tqdm import tqdm
 
 import src
-from scripts.datasets import DATASETS
+from scripts.datasets import ALL_DATASETS
 
 # DATASET = 'wisconsin.dat'
 
@@ -127,7 +127,7 @@ def tsne(dataset_name: str) -> None:
 if __name__ == '__main__':
     src.config.logging_config.level = 'CRITICAL'
     successful_datasets = []
-    for dataset_name in tqdm(DATASETS):
+    for dataset_name in tqdm(ALL_DATASETS):
         try:
             tsne(dataset_name)
             successful_datasets.append(dataset_name)
