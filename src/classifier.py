@@ -5,6 +5,7 @@ import numpy as np
 from torch.nn.functional import binary_cross_entropy
 from torch.optim import Adam, Optimizer
 from sklearn.metrics import roc_auc_score, confusion_matrix
+from sklearn.preprocessing import minmax_scale
 
 from src import config, logger, models
 from src.types import Dataset, GAN
@@ -60,12 +61,11 @@ class Classifier:
             generated_x_num = neg_num - pos_num
             generated_x = gan.generate_samples(generated_x_num)
             scores = gan.d(generated_x).squeeze(dim=1).detach()
-            generated_x_weights = (scores - scores.min()) / (scores.max() - scores.min())
+            generated_x_weights = 0.5 * (scores - scores.mean()) / scores.std() + 0.5
             # eta = neg_num / (sum(generated_x_weights) + pos_num)
-            # assert eta >= 1
             # real_x_weights[pos_indices] *= eta
             # generated_x_weights *= eta
-            delta = (neg_num - (pos_num + sum(generated_x_weights))) / neg_num
+            delta = (neg_num - generated_x_weights.sum() - pos_num) / (generated_x_num + pos_num)
             real_x_weights[pos_indices] += delta
             generated_x_weights += delta
             x = torch.cat([real_x, generated_x])

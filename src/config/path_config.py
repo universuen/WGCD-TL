@@ -7,6 +7,7 @@ scripts: Path = project / 'scripts'
 tests: Path = project / 'tests'
 datasets: Path = data / 'datasets'
 test_results: Path = data / 'test_results'
+tsne_plots: Path = test_results / 'tsne_plots'
 logs: Path = data / 'logs'
 
 for i in list(vars().values()):

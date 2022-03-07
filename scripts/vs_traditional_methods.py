@@ -7,18 +7,17 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
-from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, BorderlineSMOTE
+from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, SVMSMOTE
 
 import src
 from scripts.datasets import DATASETS
 
-TEST_NAME = 'delta'
+TEST_NAME = '3-7'
 
 TRADITIONAL_METHODS = [
-    RandomOverSampler,
     SMOTE,
     ADASYN,
-    BorderlineSMOTE,
+    SVMSMOTE,
 ]
 
 GAN = src.gans.SNGAN
@@ -113,8 +112,14 @@ if __name__ == '__main__':
             for metric_name in METRICS:
                 result[metric_name][gan_name]['mean'] = np.mean([i for i in result[metric_name][gan_name].values])
         # write down current result
-        with pd.ExcelWriter(result_file) as writer:
-            for metric_name in METRICS:
-                df = result[metric_name]
-                df.to_excel(writer, metric_name)
-                df.style.highlight_max(axis=1).to_excel(writer, metric_name, float_format='%.4f')
+        occupied = True
+        while occupied:
+            try:
+                with pd.ExcelWriter(result_file) as writer:
+                    for metric_name in METRICS:
+                        df = result[metric_name]
+                        df.to_excel(writer, metric_name)
+                        df.style.highlight_max(axis=1).to_excel(writer, metric_name, float_format='%.4f')
+                occupied = False
+            except PermissionError:
+                pass

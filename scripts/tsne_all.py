@@ -5,7 +5,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
-from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE, RandomOverSampler
+from imblearn.over_sampling import SMOTE, ADASYN, SVMSMOTE, RandomOverSampler
 from tqdm import tqdm
 
 import src
@@ -14,16 +14,14 @@ from scripts.datasets import DATASETS
 # DATASET = 'wisconsin.dat'
 
 TRADITIONAL_METHODS = [
-    RandomOverSampler,
     SMOTE,
     ADASYN,
-    BorderlineSMOTE,
+    SVMSMOTE,
 ]
 
 GAN_MODELS = [
     src.gans.ClassicGAN,
     src.gans.WGAN,
-    src.gans.WGANGP,
     src.gans.SNGAN,
 ]
 
@@ -77,7 +75,7 @@ def tsne(dataset_name: str) -> None:
         result[f'{GAN.__name__}_W'] = [embedded_x, y]
 
     sns.set_style('white')
-    fig, axes = plt.subplots(3, 4)
+    fig, axes = plt.subplots(3, 3)
     for (key, value), axe in zip(result.items(), axes.flat):
         # axe.set(xticklabels=[])
         # axe.set(yticklabels=[])
@@ -122,7 +120,8 @@ def tsne(dataset_name: str) -> None:
     fig.set_dpi(100)
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3)
     plt.subplots_adjust(wspace=0.3, hspace=0.3)
-    plt.savefig(src.config.path_config.test_results / f'tsne_{dataset_name}.jpg')
+    plt.savefig(src.config.path_config.tsne_plots / f'{dataset_name}.jpg')
+    plt.close()
 
 
 if __name__ == '__main__':
@@ -132,7 +131,7 @@ if __name__ == '__main__':
         try:
             tsne(dataset_name)
             successful_datasets.append(dataset_name)
-        except RuntimeError:
+        except (RuntimeError, ValueError):
             pass
     with open(src.config.path_config.test_results / 'tsne_datasets.txt', 'w') as f:
         for i in successful_datasets:

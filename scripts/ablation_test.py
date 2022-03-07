@@ -10,7 +10,7 @@ from tqdm import tqdm
 import src
 from scripts.datasets import DATASETS
 
-TEST_NAME = 'delta'
+TEST_NAME = '3-7'
 
 K = 5
 
@@ -24,7 +24,7 @@ METRICS = [
 def highlight_legal_cells(s: pd.Series) -> list[str]:
     result_ = ['']
     for idx in range(1, len(s)):
-        result_.append('background-color: yellow' if s[idx] >= s[idx - 1] else '')
+        result_.append('background-color: yellow' if s[idx] > s[idx - 1] else '')
     return result_
 
 
@@ -115,8 +115,14 @@ if __name__ == '__main__':
                     result[metric_name][method_name]['mean'] = np.mean(
                         [i for i in result[metric_name][method_name].values])
             # write down current result
-            with pd.ExcelWriter(result_file) as writer:
-                for metric_name in METRICS:
-                    df = result[metric_name]
-                    df.to_excel(writer, metric_name)
-                    df.style.apply(highlight_legal_cells, axis=1).to_excel(writer, metric_name, float_format='%.4f')
+            occupied = True
+            while occupied:
+                try:
+                    with pd.ExcelWriter(result_file) as writer:
+                        for metric_name in METRICS:
+                            df = result[metric_name]
+                            df.to_excel(writer, metric_name)
+                            df.style.apply(highlight_legal_cells, axis=1).to_excel(writer, metric_name, float_format='%.4f')
+                    occupied = False
+                except PermissionError:
+                    pass

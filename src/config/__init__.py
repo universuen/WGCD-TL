@@ -12,7 +12,7 @@ from . import (
 """
 WARNING: The random seed can only guarantee the reproducibility on the same computer with the same environment!
 """
-seed = 1
+seed = 0
 
 # device used for training
 device: str = 'auto'

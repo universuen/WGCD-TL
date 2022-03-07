@@ -21,17 +21,6 @@ class TransferLearner:
         self.classifier.fit(dataset, gan=gan)
         for i in self.classifier.model.main_model.parameters():
             i.requires_grad = False
-        # self.classifier.model.last_layer = nn.Linear(
-        #     in_features=self.classifier.model.last_layer.in_features,
-        #     out_features=self.classifier.model.last_layer.out_features,
-        # )
-        #
-        # def init_weights(layer: nn.Module):
-        #     nn.init.normal_(layer.weight.data, 0.0, 0.02)
-        #     nn.init.constant_(layer.bias.data, 0)
-        #
-        # self.classifier.model.last_layer.apply(init_weights)
-        # self.classifier.model.last_layer.to(config.device)
         optimizer = Adam(
             params=self.classifier.model.last_layer.parameters(),
             lr=config.classifier_config.lr,

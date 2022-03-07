@@ -10,12 +10,11 @@ from tqdm import tqdm
 import src
 from scripts.datasets import DATASETS
 
-TEST_NAME = 'delta'
+TEST_NAME = '3-7'
 
 GANS = [
     src.gans.ClassicGAN,
     src.gans.WGAN,
-    src.gans.WGANGP,
     src.gans.SNGAN,
 ]
 K = 5
@@ -116,8 +115,14 @@ if __name__ == '__main__':
                         ]
                     )
             # write down current result
-            with pd.ExcelWriter(result_file) as writer:
-                for metric_name in METRICS:
-                    df = result[metric_name]
-                    df.to_excel(writer, metric_name)
-                    df.style.apply(highlight_higher_cells, axis=1).to_excel(writer, metric_name, float_format='%.4f')
+            occupied = True
+            while occupied:
+                try:
+                    with pd.ExcelWriter(result_file) as writer:
+                        for metric_name in METRICS:
+                            df = result[metric_name]
+                            df.to_excel(writer, metric_name)
+                            df.style.apply(highlight_higher_cells, axis=1).to_excel(writer, metric_name, float_format='%.4f')
+                    occupied = False
+                except PermissionError:
+                    pass

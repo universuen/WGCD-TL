@@ -10,7 +10,6 @@ from scripts.datasets import DATASETS
 
 METHODS = [
     'Original',
-    'RandomOverSampler',
     'SMOTE',
     'ADASYN',
     'BorderlineSMOTE',

@@ -27,13 +27,19 @@ def preprocess_data(file_name: str) -> (np.ndarray, np.ndarray):
     file_path = src.config.path_config.datasets / file_name
     # calculate skip rows
     skip_rows = 0
-    with open(file_path, 'r') as f:
-        while True:
-            line = f.readline()
-            if line[0] != '@':
-                break
-            else:
-                skip_rows += 1
+    occupied = True
+    while occupied:
+        try:
+            with open(file_path, 'r') as f:
+                while True:
+                    line = f.readline()
+                    if line[0] != '@':
+                        break
+                    else:
+                        skip_rows += 1
+            occupied = False
+        except PermissionError:
+            pass
     # read raw data
     df = pd.read_csv(file_path, sep=',', skiprows=skip_rows, header=None)
     np_array = df.to_numpy()
