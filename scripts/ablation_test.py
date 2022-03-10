@@ -10,7 +10,7 @@ from tqdm import tqdm
 import src
 from scripts.datasets import DATASETS
 
-TEST_NAME = '3-7'
+TEST_NAME = 'final'
 
 K = 5
 
@@ -35,10 +35,10 @@ if __name__ == '__main__':
         input(f'{result_file} already existed, continue?')
     methods = [
         'Baseline',
-        'SNGAN',
-        'SNGAN-W',
-        'SNGAN-W-BL',
-        'SNGAN-W-BL-TL',
+        'G',
+        'W-G',
+        'W-G-CSL',
+        'W-G-CSL-TL',
     ]
     # [metric][method][dataset]
     result = {
@@ -80,21 +80,21 @@ if __name__ == '__main__':
                 if method_name == 'Baseline':
                     classifier = src.classifier.Classifier('Baseline')
                     classifier.fit(training_dataset)
-                elif method_name == 'SNGAN':
-                    classifier = src.classifier.Classifier('SNGAN')
+                elif method_name == 'G':
+                    classifier = src.classifier.Classifier('G')
                     balanced_dataset = src.utils.get_balanced_dataset(training_dataset, sngan)
                     classifier.fit(balanced_dataset)
-                elif method_name == 'SNGAN-W':
-                    classifier = src.classifier.Classifier('SNGAN-W')
+                elif method_name == 'W-G':
+                    classifier = src.classifier.Classifier('W-G')
                     balanced_dataset = src.utils.get_balanced_dataset(training_dataset, w_sngan)
                     classifier.fit(balanced_dataset)
-                elif method_name == 'SNGAN-W-BL':
-                    classifier = src.classifier.Classifier('SNGAN-W-BL')
+                elif method_name == 'W-G-CSL':
+                    classifier = src.classifier.Classifier('W-G-CSL')
                     classifier.fit(
                         dataset=training_dataset,
                         gan=w_sngan,
                     )
-                elif method_name == 'SNGAN-W-BL-TL':
+                elif method_name == 'W-G-CSL-TL':
                     classifier = src.transfer_learner.TransferLearner()
                     classifier.fit(
                         dataset=training_dataset,

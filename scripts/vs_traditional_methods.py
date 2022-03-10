@@ -12,7 +12,7 @@ from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, SVMSMOTE
 import src
 from scripts.datasets import DATASETS
 
-TEST_NAME = '3-7'
+TEST_NAME = 'final'
 
 TRADITIONAL_METHODS = [
     SMOTE,
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     result_file = src.config.path_config.test_results / f'vstm_{TEST_NAME}.xlsx'
     if os.path.exists(result_file):
         input(f'{result_file} already existed, continue?')
-    all_methods = ['Baseline', *[i.__name__ for i in TRADITIONAL_METHODS], 'GAN-TL']
+    all_methods = ['Baseline', *[i.__name__ for i in TRADITIONAL_METHODS], 'WGCSLTL']
     result = {
         k: pd.DataFrame(
             {
@@ -91,7 +91,7 @@ if __name__ == '__main__':
                 except (RuntimeError, ValueError):
                     for metric_name in METRICS:
                         temp_result[metric_name][METHOD.__name__].append(0)
-            # test RGAN-TL
+            # test WGCSLTL
             src.utils.set_random_state()
             gan = src.gans.SNGAN()
             gan.fit(src.datasets.WeightedPositiveDataset())
@@ -102,7 +102,7 @@ if __name__ == '__main__':
             )
             tl_classifier.test(test_dataset)
             for metric_name in METRICS:
-                temp_result[metric_name]['GAN-TL'].append(tl_classifier.metrics[metric_name])
+                temp_result[metric_name]['WGCSLTL'].append(tl_classifier.metrics[metric_name])
         # calculate final metrics
         for method_name in all_methods:
             for metric_name in METRICS:

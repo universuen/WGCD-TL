@@ -9,11 +9,11 @@ import src
 from scripts.datasets import DATASETS
 
 METHODS = [
-    'Original',
+    'Baseline',
     'SMOTE',
     'ADASYN',
-    'BorderlineSMOTE',
-    'RVGAN-TL',
+    'SVMSMOTE',
+    'WGCSLTL',
 ]
 
 METRICS = [
@@ -47,7 +47,7 @@ cd = cal_cd(len(DATASETS), 6, 2.85)
 for i in METRICS:
     plt.subplots_adjust(left=0.25)
     x = list(ranks[i].values())
-    y = [j if j != 'RandomOverSampler' else 'ROS' for j in ranks[i].keys()]
+    y = [j for j in ranks[i].keys()]
     min_ = [i for i in x - cd / 2]
     max_ = [i for i in x + cd / 2]
     plt.title(f'{i} Friedman Test Result')
