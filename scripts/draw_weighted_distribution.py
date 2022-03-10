@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     r_dataset = WeightedPositiveDataset()
     utils.set_random_state()
-    r_features = r_dataset.get_samples()
+    r_features = r_dataset.get_samples(int(0.05 * len(x)))
     features = np.append(features, r_features, axis=0)
     types.extend(['Chosen' for _ in r_features])
 
