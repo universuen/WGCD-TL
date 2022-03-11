@@ -112,7 +112,7 @@ def tsne(dataset_name: str) -> None:
             y=minority[:, 1],
             ax=axe,
             alpha=1.0,
-            s=10,
+            # s=10,
             label='minority',
         )
         axe.get_legend().remove()

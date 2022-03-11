@@ -8,9 +8,9 @@ from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
 import src
-from scripts.datasets import DATASETS
+from scripts.datasets import ALL_DATASETS as DATASETS
 
-TEST_NAME = 'final'
+TEST_NAME = 'without_bias'
 
 K = 5
 

@@ -10,9 +10,9 @@ from tqdm import tqdm
 from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, SVMSMOTE
 
 import src
-from scripts.datasets import DATASETS
+from scripts.datasets import ALL_DATASETS as DATASETS
 
-TEST_NAME = 'final'
+TEST_NAME = 'without_bias'
 
 TRADITIONAL_METHODS = [
     SMOTE,
