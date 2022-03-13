@@ -10,7 +10,7 @@ from tqdm import tqdm
 import src
 from scripts.datasets import ALL_DATASETS as DATASETS
 
-TEST_NAME = 'without_bias'
+TEST_NAME = 'auc_fixed'
 
 K = 5
 

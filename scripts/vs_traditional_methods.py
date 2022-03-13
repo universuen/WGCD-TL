@@ -7,12 +7,12 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
-from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN, SVMSMOTE
+from imblearn.over_sampling import SMOTE, ADASYN, SVMSMOTE
 
 import src
 from scripts.datasets import ALL_DATASETS as DATASETS
 
-TEST_NAME = 'without_bias'
+TEST_NAME = 'auc_fixed'
 
 TRADITIONAL_METHODS = [
     SMOTE,

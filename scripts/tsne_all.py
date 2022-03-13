@@ -49,7 +49,7 @@ def tsne(dataset_name: str) -> None:
     for GAN in GAN_MODELS:
         src.utils.set_random_state()
         gan = GAN()
-        gan.fit(dataset)
+        gan.fit(src.datasets.PositiveDataset())
         z = torch.randn([len(raw_y) - int(2 * sum(raw_y)), src.config.model_config.z_size], device=src.config.device)
         x = np.concatenate([raw_x, gan.g(z).detach().cpu().numpy()])
         y = np.concatenate([raw_y, np.full(len(x) - len(raw_x), 2)])
@@ -77,8 +77,6 @@ def tsne(dataset_name: str) -> None:
     sns.set_style('white')
     fig, axes = plt.subplots(3, 3)
     for (key, value), axe in zip(result.items(), axes.flat):
-        # axe.set(xticklabels=[])
-        # axe.set(yticklabels=[])
         axe.set(title=key)
         majority = []
         minority = []
@@ -97,22 +95,21 @@ def tsne(dataset_name: str) -> None:
             x=majority[:, 0],
             y=majority[:, 1],
             ax=axe,
-            alpha=0.5,
+            alpha=0.8,
             label='majority',
         )
         sns.scatterplot(
             x=generated_data[:, 0],
             y=generated_data[:, 1],
             ax=axe,
-            alpha=0.5,
+            alpha=0.8,
             label='generated_data',
         )
         sns.scatterplot(
             x=minority[:, 0],
             y=minority[:, 1],
             ax=axe,
-            alpha=1.0,
-            # s=10,
+            alpha=0.8,
             label='minority',
         )
         axe.get_legend().remove()

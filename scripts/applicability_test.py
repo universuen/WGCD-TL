@@ -8,9 +8,9 @@ from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
 import src
-from scripts.datasets import DATASETS
+from scripts.datasets import ALL_DATASETS as DATASETS
 
-TEST_NAME = '3-7'
+TEST_NAME = 'auc_fixed'
 
 GANS = [
     src.gans.ClassicGAN,

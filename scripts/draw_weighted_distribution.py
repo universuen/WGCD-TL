@@ -52,6 +52,7 @@ if __name__ == '__main__':
         x='f_x',
         y='f_y',
         hue='Type',
+        alpha=0.8,
         hue_order=['Class A', 'Chosen', 'Class B'],
     )
     ax.set(xticklabels=[])

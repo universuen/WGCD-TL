@@ -86,15 +86,19 @@ class Classifier:
         self.model.eval()
         self.logger.info('Finished training')
 
-    def predict(self, x: torch.Tensor) -> torch.Tensor:
+    def predict(self, x: torch.Tensor, use_prob: bool = False) -> torch.Tensor:
         x = x.to(config.device)
         prob = self.model(x)
-        return self._prob2label(prob)
+        if use_prob:
+            return prob.squeeze(dim=1)
+        else:
+            return self._prob2label(prob)
 
     def test(self, test_dataset: Dataset):
         with torch.no_grad():
             x, label = test_dataset.samples.cpu(), test_dataset.labels.cpu()
-            predicted_label = self.predict(x).cpu()
+            predicted_prob = self.predict(x, use_prob=True).cpu()
+            predicted_label = self._prob2label(predicted_prob).cpu()
             tn, fp, fn, tp = confusion_matrix(
                 y_true=label,
                 y_pred=predicted_label,
@@ -109,7 +113,7 @@ class Classifier:
 
             auc = roc_auc_score(
                 y_true=label,
-                y_score=predicted_label,
+                y_score=predicted_prob,
             )
 
             self.metrics['F1'] = f1
@@ -118,7 +122,7 @@ class Classifier:
 
     @staticmethod
     def _prob2label(prob):
-        probabilities = prob.squeeze(dim=1)
+        probabilities = prob.squeeze()
         labels = np.zeros(probabilities.size())
         for i, p in enumerate(probabilities):
             if p >= 0.5:
