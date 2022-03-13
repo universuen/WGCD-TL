@@ -5,7 +5,6 @@ import numpy as np
 from torch.nn.functional import binary_cross_entropy
 from torch.optim import Adam, Optimizer
 from sklearn.metrics import roc_auc_score, confusion_matrix
-from sklearn.preprocessing import minmax_scale
 
 from src import config, logger, models
 from src.types import Dataset, GAN
@@ -90,7 +89,7 @@ class Classifier:
         x = x.to(config.device)
         prob = self.model(x)
         if use_prob:
-            return prob.squeeze(dim=1)
+            return prob.squeeze(dim=1).detach()
         else:
             return self._prob2label(prob)
 

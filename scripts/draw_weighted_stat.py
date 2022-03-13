@@ -29,4 +29,5 @@ if __name__ == '__main__':
     ax2.set_xlabel('sample ID')
     ax1.set_ylabel('sample fit', color='tab:blue')
     ax2.set_ylabel('chosen frequency', color='tab:orange')
+    plt.savefig(src.config.path_config.test_results / 'weighted_statistics.jpg')
     plt.show()

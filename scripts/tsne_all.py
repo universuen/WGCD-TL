@@ -11,8 +11,6 @@ from tqdm import tqdm
 import src
 from scripts.datasets import ALL_DATASETS
 
-# DATASET = 'wisconsin.dat'
-
 TRADITIONAL_METHODS = [
     SMOTE,
     ADASYN,
