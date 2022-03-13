@@ -12,7 +12,7 @@ from src.datasets import FullDataset, WeightedPositiveDataset
 
 
 if __name__ == '__main__':
-    x, y = make_blobs(1000, n_features=2, centers=2, random_state=config.seed)
+    x, y = make_blobs(600, n_features=3, centers=2, random_state=config.seed)
     datasets.training_samples, datasets.training_labels = x, y
 
     full_dataset = FullDataset()
@@ -22,15 +22,15 @@ if __name__ == '__main__':
 
     for i in full_dataset.labels:
         if i.item() == 0:
-            types.append('Class A')
+            types.append('Negative')
         else:
-            types.append('Class B')
+            types.append('Positive')
 
     r_dataset = WeightedPositiveDataset()
     utils.set_random_state()
-    r_features = r_dataset.get_samples(int(0.05 * len(x)))
+    r_features = r_dataset.get_samples(int(0.1 * len(x)))
     features = np.append(features, r_features, axis=0)
-    types.extend(['Chosen' for _ in r_features])
+    types.extend(['Selected' for _ in r_features])
 
     features = TSNE(
         learning_rate='auto',
@@ -53,11 +53,11 @@ if __name__ == '__main__':
         y='f_y',
         hue='Type',
         alpha=0.8,
-        hue_order=['Class A', 'Chosen', 'Class B'],
+        hue_order=['Negative', 'Selected', 'Positive'],
     )
-    ax.set(xticklabels=[])
+    # ax.set(xticklabels=[])
     ax.set(xlabel=None)
-    ax.set(yticklabels=[])
+    # ax.set(yticklabels=[])
     ax.set(ylabel=None)
     plt.savefig(config.path_config.test_results / 'weighted_distribution.jpg')
     plt.show()

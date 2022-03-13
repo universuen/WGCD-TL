@@ -35,13 +35,13 @@ class WeightedPositiveDataset(PositiveDataset):
             ]
         )
         k = int(len(all_samples) / 10)
-        entropy = torch.zeros(len(pos_samples))
+        self.entropy = torch.zeros(len(pos_samples))
         for i, _ in enumerate(pos_samples):
             indices = torch.topk(self.dists[i], k, largest=False).indices
             labels = all_labels[indices]
             p = sum(labels) / k - 1e-5  # make sure 0 < p < 1
-            entropy[i] = -(p * torch.log(p) + (1-p) * torch.log(1-p))
-        self.weights = entropy / (sum(entropy) + 1e-5)
+            self.entropy[i] = -(p * torch.log(p) + (1-p) * torch.log(1-p))
+        self.weights = self.entropy / (sum(self.entropy) + 1e-5)
 
     def _get_weighted_samples(self, size: int) -> torch.Tensor:
         return torch.stack(

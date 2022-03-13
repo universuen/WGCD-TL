@@ -9,7 +9,7 @@ from imblearn.over_sampling import SMOTE, ADASYN, SVMSMOTE, RandomOverSampler
 from tqdm import tqdm
 
 import src
-from scripts.datasets import ALL_DATASETS
+# from scripts.datasets import ALL_DATASETS
 
 TRADITIONAL_METHODS = [
     SMOTE,
@@ -94,26 +94,26 @@ def tsne(dataset_name: str) -> None:
             y=majority[:, 1],
             ax=axe,
             alpha=0.8,
-            label='majority',
+            label='Negative',
         )
         sns.scatterplot(
             x=generated_data[:, 0],
             y=generated_data[:, 1],
             ax=axe,
             alpha=0.8,
-            label='generated_data',
+            label='Generated',
         )
         sns.scatterplot(
             x=minority[:, 0],
             y=minority[:, 1],
             ax=axe,
             alpha=0.8,
-            label='minority',
+            label='Positive',
         )
         axe.get_legend().remove()
     fig.set_size_inches(18, 10)
     fig.set_dpi(100)
-    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3)
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3)
     plt.subplots_adjust(wspace=0.3, hspace=0.3)
     plt.savefig(src.config.path_config.tsne_plots / f'{dataset_name}.jpg')
     plt.close()
@@ -122,12 +122,13 @@ def tsne(dataset_name: str) -> None:
 if __name__ == '__main__':
     src.config.logging_config.level = 'CRITICAL'
     successful_datasets = []
-    for dataset_name in tqdm(ALL_DATASETS):
-        try:
-            tsne(dataset_name)
-            successful_datasets.append(dataset_name)
-        except (RuntimeError, ValueError):
-            pass
-    with open(src.config.path_config.test_results / 'tsne_datasets.txt', 'w') as f:
-        for i in successful_datasets:
-            f.write(f'{i}\n')
+    tsne('wisconsin.dat')
+    # for dataset_name in tqdm(ALL_DATASETS):
+    #     try:
+    #         tsne(dataset_name)
+    #         successful_datasets.append(dataset_name)
+    #     except (RuntimeError, ValueError):
+    #         pass
+    # with open(src.config.path_config.test_results / 'tsne_datasets.txt', 'w') as f:
+    #     for i in successful_datasets:
+    #         f.write(f'{i}\n')
