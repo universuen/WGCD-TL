@@ -12,7 +12,7 @@ from imblearn.over_sampling import SMOTE, ADASYN, SVMSMOTE
 import src
 from scripts.datasets import ALL_DATASETS as DATASETS
 
-TEST_NAME = 'auc_fixed'
+TEST_NAME = 'AUC_fixed'
 
 TRADITIONAL_METHODS = [
     SMOTE,

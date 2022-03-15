@@ -10,7 +10,7 @@ from tqdm import tqdm
 import src
 from scripts.datasets import ALL_DATASETS as DATASETS
 
-TEST_NAME = 'auc_fixed'
+TEST_NAME = 'AUC_fixed'
 
 GANS = [
     src.gans.ClassicGAN,
@@ -103,26 +103,27 @@ if __name__ == '__main__':
                 for metric_name in METRICS:
                     temp_result[metric_name][f'{GAN.__name__}_imp'].append(tl_classifier.metrics[metric_name])
             # calculate final metrics
-            for model_name in all_models:
-                for metric_name in METRICS:
-                    result[metric_name][model_name][dataset_name] = np.mean(temp_result[metric_name][model_name])
-            # calculate average metrics on all datasets
-            for model_name in all_models:
-                for metric_name in METRICS:
-                    result[metric_name][model_name]['mean'] = np.mean(
-                        [
-                            i for i in result[metric_name][model_name].values
-                        ]
-                    )
-            # write down current result
-            occupied = True
-            while occupied:
-                try:
-                    with pd.ExcelWriter(result_file) as writer:
-                        for metric_name in METRICS:
-                            df = result[metric_name]
-                            df.to_excel(writer, metric_name)
-                            df.style.apply(highlight_higher_cells, axis=1).to_excel(writer, metric_name, float_format='%.4f')
-                    occupied = False
-                except PermissionError:
-                    pass
+        for model_name in all_models:
+            for metric_name in METRICS:
+                result[metric_name][model_name][dataset_name] = np.mean(temp_result[metric_name][model_name])
+        # calculate average metrics on all datasets
+        for model_name in all_models:
+            for metric_name in METRICS:
+                result[metric_name][model_name]['mean'] = np.mean(
+                    [
+                        i for i in result[metric_name][model_name].values
+                    ]
+                )
+        # write down current result
+        occupied = True
+        while occupied:
+            try:
+                with pd.ExcelWriter(result_file) as writer:
+                    for metric_name in METRICS:
+                        df = result[metric_name]
+                        df.to_excel(writer, metric_name)
+                        df.style.apply(highlight_higher_cells, axis=1).to_excel(writer, metric_name,
+                                                                                float_format='%.4f')
+                occupied = False
+            except PermissionError:
+                pass

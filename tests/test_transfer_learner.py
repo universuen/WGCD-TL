@@ -8,6 +8,7 @@ from src.gans import SNGAN
 FILE_NAME = 'pima.dat'
 
 if __name__ == '__main__':
+    utils.turn_on_test_mode()
     # prepare dataset
     utils.prepare_dataset(FILE_NAME)
 

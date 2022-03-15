@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 
 import src.config.path_config
-from scripts.ablation_test import highlight_legal_cells
+from scripts.ablation_exp import highlight_legal_cells
 from scripts.applicability_test import highlight_higher_cells
 from scripts.datasets import DATASETS
 
 if __name__ == '__main__':
-    src_path = src.config.path_config.test_results / 'ablation_without_bias.xlsx'
+    src_path = src.config.path_config.test_results / 'ablation_AUC_fixed.xlsx'
     dst_path = src.config.path_config.test_results / 'ablation_final.xlsx'
     with pd.ExcelWriter(dst_path) as writer:
         for metric_name in ['F1', 'AUC', 'G-Mean']:
@@ -16,7 +16,7 @@ if __name__ == '__main__':
             df.to_excel(writer, metric_name)
             df.style.apply(highlight_legal_cells, axis=1).to_excel(writer, metric_name, float_format='%.4f')
 
-    src_path = src.config.path_config.test_results / 'applicability_without_bias.xlsx'
+    src_path = src.config.path_config.test_results / 'applicability_AUC_fixed.xlsx'
     dst_path = src.config.path_config.test_results / 'applicability_final.xlsx'
     with pd.ExcelWriter(dst_path) as writer:
         for metric_name in ['F1', 'AUC', 'G-Mean']:
@@ -25,7 +25,7 @@ if __name__ == '__main__':
             df.to_excel(writer, metric_name)
             df.style.apply(highlight_higher_cells, axis=1).to_excel(writer, metric_name, float_format='%.4f')
 
-    src_path = src.config.path_config.test_results / 'vstm_without_bias.xlsx'
+    src_path = src.config.path_config.test_results / 'vstm_AUC_fixed.xlsx'
     dst_path = src.config.path_config.test_results / 'vstm_final.xlsx'
     with pd.ExcelWriter(dst_path) as writer:
         for metric_name in ['F1', 'AUC', 'G-Mean']:

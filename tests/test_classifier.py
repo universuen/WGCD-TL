@@ -9,7 +9,6 @@ from src.gans import SNGAN
 FILE_NAME = 'ecoli-0-1-3-7_vs_2-6.dat'
 
 if __name__ == '__main__':
-    utils.turn_on_test_mode()
     # prepare dataset
     utils.prepare_dataset(FILE_NAME)
 

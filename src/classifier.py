@@ -27,6 +27,7 @@ class Classifier:
             optimizer: Optimizer = None,
             gan: GAN = None,
     ):
+        self.model.train()
         self.logger.info('Started training')
         self.logger.debug(f'Using device: {config.device}')
 

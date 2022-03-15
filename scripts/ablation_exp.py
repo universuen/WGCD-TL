@@ -10,7 +10,7 @@ from tqdm import tqdm
 import src
 from scripts.datasets import ALL_DATASETS as DATASETS
 
-TEST_NAME = 'auc_fixed'
+TEST_NAME = 'AUC_fixed'
 
 K = 5
 
@@ -22,9 +22,10 @@ METRICS = [
 
 
 def highlight_legal_cells(s: pd.Series) -> list[str]:
-    result_ = ['']
-    for idx in range(1, len(s)):
-        result_.append('background-color: yellow' if s[idx] > s[idx - 1] else '')
+    result_ = []
+    for idx in range(len(s) - 1):
+        result_.append('background-color: yellow' if s[idx] > s[idx + 1] else '')
+    result_.append('background-color: yellow')
     return result_
 
 
@@ -34,11 +35,11 @@ if __name__ == '__main__':
     if os.path.exists(result_file):
         input(f'{result_file} already existed, continue?')
     methods = [
-        'Baseline',
-        'G',
-        'W-G',
-        'W-G-CSL',
         'W-G-CSL-TL',
+        'W-G-CSL',
+        'W-G',
+        'G',
+        'Baseline',
     ]
     # [metric][method][dataset]
     result = {
@@ -69,14 +70,14 @@ if __name__ == '__main__':
 
             training_dataset = src.datasets.FullDataset()
             test_dataset = src.datasets.FullDataset(test=True)
+            src.utils.set_random_state()
             sngan = src.gans.SNGAN()
             sngan.fit(training_dataset)
+            src.utils.set_random_state()
             w_sngan = src.gans.SNGAN()
             w_sngan.fit(src.datasets.WeightedPositiveDataset())
             classifier = None
-
             for method_name in methods:
-                src.utils.set_random_state()
                 if method_name == 'Baseline':
                     classifier = src.classifier.Classifier('Baseline')
                     classifier.fit(training_dataset)
@@ -100,29 +101,28 @@ if __name__ == '__main__':
                         dataset=training_dataset,
                         gan=w_sngan,
                     )
-
                 classifier.test(test_dataset)
                 for metric_name in METRICS:
                     temp_result[metric_name][method_name].append(classifier.metrics[metric_name])
 
-            # calculate final metrics
-            for method_name in methods:
-                for metric_name in METRICS:
-                    result[metric_name][method_name][dataset_name] = np.mean(temp_result[metric_name][method_name])
-            # calculate average metrics on all datasets
-            for method_name in methods:
-                for metric_name in METRICS:
-                    result[metric_name][method_name]['mean'] = np.mean(
-                        [i for i in result[metric_name][method_name].values])
-            # write down current result
-            occupied = True
-            while occupied:
-                try:
-                    with pd.ExcelWriter(result_file) as writer:
-                        for metric_name in METRICS:
-                            df = result[metric_name]
-                            df.to_excel(writer, metric_name)
-                            df.style.apply(highlight_legal_cells, axis=1).to_excel(writer, metric_name, float_format='%.4f')
-                    occupied = False
-                except PermissionError:
-                    pass
+        # calculate final metrics
+        for method_name in methods:
+            for metric_name in METRICS:
+                result[metric_name][method_name][dataset_name] = np.mean(temp_result[metric_name][method_name])
+        # calculate average metrics on all datasets
+        for method_name in methods:
+            for metric_name in METRICS:
+                result[metric_name][method_name]['mean'] = np.mean(
+                    [i for i in result[metric_name][method_name].values])
+        # write down current result
+        occupied = True
+        while occupied:
+            try:
+                with pd.ExcelWriter(result_file) as writer:
+                    for metric_name in METRICS:
+                        df = result[metric_name]
+                        df.to_excel(writer, metric_name)
+                        df.style.apply(highlight_legal_cells, axis=1).to_excel(writer, metric_name, float_format='%.4f')
+                occupied = False
+            except PermissionError:
+                pass
